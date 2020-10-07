@@ -1,0 +1,9 @@
+apiVersion: v2.edp.epam.com/v1alpha1
+kind: PerfServer
+metadata:
+  name: epam-perf
+spec:
+  apiUrl: https://jiraeu-api.epam.com
+  rootUrl: https://jiraeu.epam.com
+  credentialName: epam-jira
+  projectName: stub-name

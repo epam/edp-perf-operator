@@ -1,0 +1,16 @@
+global:
+  edpName: ""
+  platform: "openshift"
+
+name: perf-operator
+image:
+  name: epamedp/perf-operator
+  version: v2.6.0
+
+perf:
+  integration: true
+  name: "epam-perf"
+  apiUrl: ""
+  rootUrl: ""
+  credentialName: "epam-perf-user"
+  projectName: ""

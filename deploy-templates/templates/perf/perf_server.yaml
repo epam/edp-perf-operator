@@ -1,0 +1,11 @@
+{{- if .Values.perf.integration -}}
+apiVersion: v2.edp.epam.com/v1alpha1
+kind: PerfServer
+metadata:
+  name: {{.Values.perf.name}}
+spec:
+  apiUrl: {{.Values.perf.apiUrl}}
+  rootUrl: {{.Values.perf.rootUrl}}
+  credentialName: {{.Values.perf.credentialName}}
+  projectName: {{.Values.perf.projectName}}
+{{end}}
