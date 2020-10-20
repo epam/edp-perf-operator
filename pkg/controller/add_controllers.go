@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"github.com/epmd-edp/perf-operator/pkg/controller/perfserver"
+	"github.com/epmd-edp/perf-operator/pkg/controller/perfdatasource"
 )
 
 func init() {
-	AddToManagerFuncs = append(AddToManagerFuncs, perfserver.Add)
+	AddToManagerFuncs = append(AddToManagerFuncs, perfdatasource.Add)
 }

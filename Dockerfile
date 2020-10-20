@@ -8,6 +8,7 @@ ENV OPERATOR=/usr/local/bin/perf-operator \
 COPY entrypoint ${OPERATOR}
 
 COPY build/bin /usr/local/bin
+COPY build/configs /usr/local/configs
 
 RUN  chmod u+x /usr/local/bin/user_setup && chmod ugo+x /usr/local/bin/entrypoint && /usr/local/bin/user_setup
 

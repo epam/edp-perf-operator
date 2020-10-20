@@ -8,22 +8,23 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// PerfServerSpec defines the desired state of PerfServer
+// PerfDataSourceSpec defines the desired state of PerfDataSource
 // +k8s:openapi-gen=true
-type PerfServerSpec struct {
+type PerfDataSourceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
-	ApiUrl         string `json:"apiUrl"`
-	RootUrl        string `json:"rootUrl"`
-	CredentialName string `json:"credentialName"`
-	ProjectName    string `json:"projectName"`
+	PerfServerName string `json:"perfServerName"`
+	Name           string `json:"name"`
+	CodebaseName   string `json:"codebaseName"`
+	Config         string `json:"config"`
+	Type           string `json:"type"`
 }
 
-// PerfServerStatus defines the observed state of PerfServer
+// PerfDataSourceStatus defines the observed state of PerfDataSource
 // +k8s:openapi-gen=true
 
-type PerfServerStatus struct {
+type PerfDataSourceStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
@@ -34,25 +35,25 @@ type PerfServerStatus struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// PerfServer is the Schema for the gitservers API
+// PerfDataSource is the Schema for the perfdatasources API
 // +k8s:openapi-gen=true
-type PerfServer struct {
+type PerfDataSource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PerfServerSpec   `json:"spec,omitempty"`
-	Status PerfServerStatus `json:"status,omitempty"`
+	Spec   PerfDataSourceSpec   `json:"spec,omitempty"`
+	Status PerfDataSourceStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// PerfServerList contains a list of PerfServer
-type PerfServerList struct {
+// PerfDataSourceList contains a list of PerfDataSource
+type PerfDataSourceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []PerfServer `json:"items"`
+	Items           []PerfDataSource `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&PerfServer{}, &PerfServerList{})
+	SchemeBuilder.Register(&PerfDataSource{}, &PerfDataSourceList{})
 }

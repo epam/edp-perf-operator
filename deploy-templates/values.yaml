@@ -10,7 +10,7 @@ image:
 perf:
   integration: true
   name: "epam-perf"
-  apiUrl: ""
-  rootUrl: ""
+  apiUrl: "https://perf.delivery.epam.com"
+  rootUrl: "https://perf.delivery.epam.com"
   credentialName: "epam-perf-user"
-  projectName: ""
+  projectName: "EPMD-EDP"

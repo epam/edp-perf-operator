@@ -1,10 +1,12 @@
-package perfserver
+package perfdatasource
 
 import (
 	"context"
 	edpv1alpha1 "github.com/epmd-edp/perf-operator/pkg/apis/edp/v1alpha1"
 	"github.com/epmd-edp/perf-operator/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/pkg/controller/perfserver/chain"
+	"github.com/epmd-edp/perf-operator/pkg/controller/perfdatasource/chain"
+	"github.com/epmd-edp/perf-operator/pkg/util/cluster"
+	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -17,76 +19,77 @@ import (
 	"time"
 )
 
+var (
+	log = logf.Log.WithName("controller_perf_data_source")
+)
+
 func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
 }
 
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcilePerfServer{
+	return &ReconcilePerfDataSource{
 		client: mgr.GetClient(),
 		scheme: mgr.GetScheme(),
 	}
 }
 
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	c, err := controller.New("perfserver-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("perfdatasource-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
-	if err = c.Watch(&source.Kind{Type: &edpv1alpha1.PerfServer{}}, &handler.EnqueueRequestForObject{}); err != nil {
+	if err = c.Watch(&source.Kind{Type: &edpv1alpha1.PerfDataSource{}}, &handler.EnqueueRequestForObject{}); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-var (
-	_   reconcile.Reconciler = &ReconcilePerfServer{}
-	log                      = logf.Log.WithName("controller_perf_server")
-)
+var _ reconcile.Reconciler = &ReconcilePerfDataSource{}
 
-type ReconcilePerfServer struct {
+type ReconcilePerfDataSource struct {
 	client client.Client
 	scheme *runtime.Scheme
 }
 
-func (r *ReconcilePerfServer) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcilePerfDataSource) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	rl := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	rl.V(2).Info("Reconciling PerfServer")
+	rl.V(2).Info("Reconciling PerfDataSource")
 
-	i := &edpv1alpha1.PerfServer{}
+	i := &edpv1alpha1.PerfDataSource{}
 	if err := r.client.Get(context.TODO(), request.NamespacedName, i); err != nil {
 		if k8serrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
 	}
-	defer r.updateStatus(i)
 
-	pc, err := r.newPerfRestClient(i.Spec.ApiUrl, i.Spec.CredentialName, i.Namespace)
+	ps, err := cluster.GetPerfServerCr(r.client, i.Spec.PerfServerName, i.Namespace)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrapf(err, "couldn't get %v PerfServer from cluster", i.Spec.PerfServerName)
+	}
+
+	if !ps.Status.Available {
+		log.Info("Perf instance is unavailable. skip creating/updating data source in PERF", "name", ps.Name)
+		return reconcile.Result{RequeueAfter: 2 * time.Minute}, nil
+	}
+
+	pc, err := r.newPerfRestClient(ps.Spec.ApiUrl, ps.Spec.CredentialName, ps.Namespace)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
 	if err := chain.CreateDefChain(r.client, r.scheme, pc).ServeRequest(i); err != nil {
-		i.Status.DetailedMessage = err.Error()
-		log.Error(err, "couldn't handle PERF server CR")
-		return reconcile.Result{RequeueAfter: 5 * time.Minute}, nil
+		return reconcile.Result{}, err
 	}
 
-	rl.Info("Reconciling PerfServer has been finished")
+	rl.Info("Reconciling PerfDataSource has been finished")
 	return reconcile.Result{}, nil
 }
 
-func (r ReconcilePerfServer) updateStatus(server *edpv1alpha1.PerfServer) {
-	server.Status.LastTimeUpdated = time.Now()
-	if err := r.client.Status().Update(context.TODO(), server); err != nil {
-		_ = r.client.Update(context.TODO(), server)
-	}
-}
-
-func (r ReconcilePerfServer) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {
+func (r ReconcilePerfDataSource) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {
 	credentials, err := perf.GetPerfCredentials(r.client, secretName, namespace)
 	if err != nil {
 		return nil, err

@@ -1,0 +1,10 @@
+apiVersion: v2.edp.epam.com/v1alpha1
+kind: PerfDataSource
+metadata:
+  name: stub-codebase-name-jenkins
+spec:
+  perfServerName: epam-perf
+  type: stub-type
+  name: stub-name
+  codebaseName: stub-name
+  config: stub-conf
