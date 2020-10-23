@@ -28,7 +28,7 @@ func (h PutPerfProject) tryToCreatePerfProject(ps *v1alpha1.PerfServer) error {
 	}
 	if exists {
 		log.Info("PERF project already exists. skip creating", "name", ps.Spec.ProjectName)
-		return nextServeOrNil(h.next, ps)
+		return nil
 	}
 	return errors.Errorf("%v project wasn't replicated from UPSA to PERF", ps.Spec.ProjectName)
 }
