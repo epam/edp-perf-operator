@@ -1,4 +1,4 @@
-module github.com/epmd-edp/perf-operator
+module github.com/epmd-edp/perf-operator/v2
 
 go 1.14
 
@@ -7,9 +7,9 @@ replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
 replace github.com/openshift/api => github.com/openshift/api v0.0.0-20180801171038-322a19404e37
 
 require (
-	github.com/emicklei/go-restful v2.14.2+incompatible // indirect
 	github.com/epmd-edp/codebase-operator/v2 v2.3.0-95.0.20201019102140-348726fc81a6
 	github.com/epmd-edp/edp-component-operator v0.1.1-0.20200827122548-e87429a916e0
+	github.com/epmd-edp/perf-operator v0.0.0-20201023121247-c9cd8c631d15 // indirect
 	github.com/go-openapi/spec v0.19.3
 	github.com/operator-framework/operator-sdk v0.0.0-20190530173525-d6f9cdf2f52e
 	github.com/pkg/errors v0.8.1
