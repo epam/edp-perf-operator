@@ -34,5 +34,3 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "{{ .Values.name }}"
-            - name: PLATFORM_TYPE
-              value: {{ .Values.global.platform }}
