@@ -9,7 +9,6 @@ replace github.com/openshift/api => github.com/openshift/api v0.0.0-201808011710
 require (
 	github.com/epmd-edp/codebase-operator/v2 v2.3.0-95.0.20201019102140-348726fc81a6
 	github.com/epmd-edp/edp-component-operator v0.1.1-0.20200827122548-e87429a916e0
-	github.com/epmd-edp/perf-operator v0.0.0-20201023121247-c9cd8c631d15 // indirect
 	github.com/go-openapi/spec v0.19.3
 	github.com/operator-framework/operator-sdk v0.0.0-20190530173525-d6f9cdf2f52e
 	github.com/pkg/errors v0.8.1

@@ -3,7 +3,7 @@ kind: PerfServer
 metadata:
   name: epam-perf
 spec:
-  apiUrl: https://perf.delivery.epam.com
-  rootUrl: https://perf.delivery.epam.com
+  apiUrl: https://delivery.epam.com/perf
+  rootUrl: https://delivery.epam.com/unit/2074/delivery/summary
   credentialName: epam-perf-user
   projectName: epmd-edp

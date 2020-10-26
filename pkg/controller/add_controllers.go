@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/epmd-edp/perf-operator/pkg/controller/perfdatasource"
-	"github.com/epmd-edp/perf-operator/pkg/controller/perfserver"
+	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasource"
+	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfserver"
 )
 
 func init() {

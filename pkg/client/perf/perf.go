@@ -1,10 +1,10 @@
 package perf
 
 import (
-	"github.com/epmd-edp/perf-operator/pkg/client/luminate"
-	"github.com/epmd-edp/perf-operator/pkg/model/command"
-	"github.com/epmd-edp/perf-operator/pkg/model/dto"
-	"github.com/epmd-edp/perf-operator/pkg/util/cluster"
+	"github.com/epmd-edp/perf-operator/v2/pkg/client/luminate"
+	"github.com/epmd-edp/perf-operator/v2/pkg/model/command"
+	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
+	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
 	"github.com/pkg/errors"
 	"gopkg.in/resty.v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"

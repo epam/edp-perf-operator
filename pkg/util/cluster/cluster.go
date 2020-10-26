@@ -3,7 +3,7 @@ package cluster
 import (
 	"context"
 	codebaseApi "github.com/epmd-edp/codebase-operator/v2/pkg/apis/edp/v1alpha1"
-	perfApi "github.com/epmd-edp/perf-operator/pkg/apis/edp/v1alpha1"
+	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,8 +35,8 @@ func GetOwnerReference(ownerKind string, ors []metav1.OwnerReference) *metav1.Ow
 	return nil
 }
 
-func GetPerfServerCr(c client.Client, name, namespace string) (*perfApi.PerfServer, error) {
-	ps := &perfApi.PerfServer{}
+func GetPerfServerCr(c client.Client, name, namespace string) (*v1alpha1.PerfServer, error) {
+	ps := &v1alpha1.PerfServer{}
 	if err := c.Get(context.TODO(), types.NamespacedName{
 		Namespace: namespace,
 		Name:      name,

@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	edpCompApi "github.com/epmd-edp/edp-component-operator/pkg/apis/v1/v1alpha1"
-	"github.com/epmd-edp/perf-operator/pkg/apis/edp/v1alpha1"
+	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
 	"io/ioutil"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

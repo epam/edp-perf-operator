@@ -2,10 +2,10 @@ package perfdatasource
 
 import (
 	"context"
-	edpv1alpha1 "github.com/epmd-edp/perf-operator/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/pkg/controller/perfdatasource/chain"
-	"github.com/epmd-edp/perf-operator/pkg/util/cluster"
+	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
+	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasource/chain"
+	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -40,7 +40,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	if err = c.Watch(&source.Kind{Type: &edpv1alpha1.PerfDataSource{}}, &handler.EnqueueRequestForObject{}); err != nil {
+	if err = c.Watch(&source.Kind{Type: &v1alpha1.PerfDataSource{}}, &handler.EnqueueRequestForObject{}); err != nil {
 		return err
 	}
 
@@ -58,7 +58,7 @@ func (r *ReconcilePerfDataSource) Reconcile(request reconcile.Request) (reconcil
 	rl := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	rl.V(2).Info("Reconciling PerfDataSource")
 
-	i := &edpv1alpha1.PerfDataSource{}
+	i := &v1alpha1.PerfDataSource{}
 	if err := r.client.Get(context.TODO(), request.NamespacedName, i); err != nil {
 		if k8serrors.IsNotFound(err) {
 			return reconcile.Result{}, nil

@@ -4,8 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/epmd-edp/perf-operator/pkg/apis"
-	"github.com/epmd-edp/perf-operator/pkg/controller"
+	"github.com/epmd-edp/perf-operator/v2/pkg/apis"
+	"github.com/epmd-edp/perf-operator/v2/pkg/controller"
 	"os"
 	"runtime"
 

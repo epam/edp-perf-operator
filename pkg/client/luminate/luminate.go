@@ -2,7 +2,7 @@ package luminate
 
 import (
 	"encoding/json"
-	"github.com/epmd-edp/perf-operator/pkg/util/common"
+	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
 	"github.com/pkg/errors"
 	"gopkg.in/resty.v1"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"

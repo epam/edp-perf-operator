@@ -2,13 +2,13 @@ package chain
 
 import (
 	"encoding/json"
-	"github.com/epmd-edp/perf-operator/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/pkg/controller/perfdatasource/chain/handler"
-	"github.com/epmd-edp/perf-operator/pkg/model/command"
-	"github.com/epmd-edp/perf-operator/pkg/model/dto"
-	"github.com/epmd-edp/perf-operator/pkg/util/cluster"
-	"github.com/epmd-edp/perf-operator/pkg/util/consts"
+	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
+	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasource/chain/handler"
+	"github.com/epmd-edp/perf-operator/v2/pkg/model/command"
+	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
+	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
+	"github.com/epmd-edp/perf-operator/v2/pkg/util/consts"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

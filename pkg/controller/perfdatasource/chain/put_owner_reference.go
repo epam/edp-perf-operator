@@ -2,10 +2,10 @@ package chain
 
 import (
 	"context"
-	"github.com/epmd-edp/perf-operator/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/pkg/controller/perfdatasource/chain/handler"
-	"github.com/epmd-edp/perf-operator/pkg/util/cluster"
-	"github.com/epmd-edp/perf-operator/pkg/util/consts"
+	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasource/chain/handler"
+	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
+	"github.com/epmd-edp/perf-operator/v2/pkg/util/consts"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
