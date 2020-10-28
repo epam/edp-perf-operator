@@ -17,10 +17,10 @@ type PerfClient interface {
 	Connected() (bool, error)
 	GetProject(name string) (ds *dto.PerfProject, err error)
 	ProjectExists(name string) (bool, error)
-	GetProjectDataSource(projectName, dataSourceName string) (*dto.DataSource, error)
-	CreateDataSource(projectName string, command command.DataSourceCreateCommand) error
+	GetProjectDataSource(projectName, dsType string) (*dto.DataSource, error)
+	CreateDataSource(projectName string, command command.DataSourceCommand) error
 	ActivateDataSource(projectName string, dataSourceId int) error
-	UpdateDataSource(ds dto.DataSource) error
+	UpdateDataSource(command command.DataSourceCommand) error
 }
 
 type PerfClientAdapter struct {
@@ -117,12 +117,22 @@ func (c PerfClientAdapter) GetProject(name string) (ds *dto.PerfProject, err err
 		return nil, err
 	}
 
-	for _, p := range projects {
-		if p.Name == strings.ToUpper(name) {
-			return &p, nil
+	var (
+		node     *dto.PerfProject
+		findNode func(projects []dto.PerfProject, name string)
+	)
+	findNode = func(projects []dto.PerfProject, name string) {
+		for _, child := range projects {
+			if strings.ToLower(child.Name) == strings.ToLower(name) {
+				node = &child
+				break
+			}
+			findNode(child.Children, name)
 		}
 	}
-	return nil, nil
+	findNode(projects, name)
+
+	return node, nil
 }
 
 func (c PerfClientAdapter) ProjectExists(name string) (bool, error) {
@@ -158,8 +168,8 @@ func (c PerfClientAdapter) getProjects() ([]dto.PerfProject, error) {
 	return pp, nil
 }
 
-func (c PerfClientAdapter) GetProjectDataSource(projectName, dataSourceName string) (*dto.DataSource, error) {
-	rlog := log.WithValues("projectName", projectName, "dataSourceName", dataSourceName)
+func (c PerfClientAdapter) GetProjectDataSource(projectName, dsType string) (*dto.DataSource, error) {
+	rlog := log.WithValues("projectName", projectName, "dsType", dsType)
 	rlog.Info("start retrieving PERF datasource")
 	project, err := c.GetProject(projectName)
 	if err != nil {
@@ -169,13 +179,18 @@ func (c PerfClientAdapter) GetProjectDataSource(projectName, dataSourceName stri
 		return nil, errors.Errorf("PERF project %v wasn't found", projectName)
 	}
 
+	if !project.HasDataSource {
+		rlog.Info("there're no datasources.")
+		return nil, nil
+	}
+
 	dss, err := c.getProjectDataSources(project.Id)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, ds := range dss {
-		if ds.Name == strings.ToUpper(dataSourceName) {
+		if ds.Type == strings.ToUpper(dsType) {
 			rlog.Info("datasource has been found in PERF.")
 			return &ds, nil
 		}
@@ -202,7 +217,7 @@ func (c PerfClientAdapter) getProjectDataSources(projectId int) ([]dto.DataSourc
 	return ds, nil
 }
 
-func (c PerfClientAdapter) CreateDataSource(projectName string, command command.DataSourceCreateCommand) error {
+func (c PerfClientAdapter) CreateDataSource(projectName string, command command.DataSourceCommand) error {
 	rlog := log.WithValues("project name", projectName, "datasource name", command.Name)
 	rlog.Info("start creating datasource under project")
 	project, err := c.GetProject(projectName)
@@ -253,21 +268,21 @@ func (c PerfClientAdapter) ActivateDataSource(projectName string, dataSourceId i
 	return nil
 }
 
-func (c PerfClientAdapter) UpdateDataSource(ds dto.DataSource) error {
-	log.Info("start updating PERF datasource", "name", ds.Name)
+func (c PerfClientAdapter) UpdateDataSource(command command.DataSourceCommand) error {
+	log.Info("start updating PERF datasource", "name", command.Name)
 	resp, err := c.client.R().
 		SetHeader("Content-Type", "application/json").
 		SetPathParams(map[string]string{
-			"id": strconv.Itoa(ds.Id),
+			"id": strconv.Itoa(command.Id),
 		}).
-		SetBody(ds).
+		SetBody(command).
 		Put("/api/v2/datasources/{id}")
 	if err != nil {
-		return errors.Wrapf(err, "couldn't update %v datasource", ds.Name)
+		return errors.Wrapf(err, "couldn't update %v datasource", command.Name)
 	}
 	if resp.IsError() {
-		return errors.Errorf("couldn't update %v datasource. Status - %v", ds.Name, resp.StatusCode())
+		return errors.Errorf("couldn't update %v datasource. Status - %v", command.Name, resp.StatusCode())
 	}
-	log.Info("PERF datasource has been update.", "name", ds.Name)
+	log.Info("PERF datasource has been update.", "name", command.Name)
 	return nil
 }

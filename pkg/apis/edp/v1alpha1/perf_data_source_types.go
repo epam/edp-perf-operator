@@ -14,11 +14,17 @@ type PerfDataSourceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
-	PerfServerName string `json:"perfServerName"`
-	Name           string `json:"name"`
-	CodebaseName   string `json:"codebaseName"`
-	Config         string `json:"config"`
-	Type           string `json:"type"`
+	Name           string           `json:"name"`
+	Type           string           `json:"type"`
+	Config         DataSourceConfig `json:"config"`
+	PerfServerName string           `json:"perfServerName"`
+}
+
+type DataSourceConfig struct {
+	JobNames       []string `json:"jobNames"`
+	ProjectKeys    []string `json:"projectKeys"`
+	Url            string   `json:"url"`
+	CredentialName string   `json:"credentialName"`
 }
 
 // PerfDataSourceStatus defines the observed state of PerfDataSource

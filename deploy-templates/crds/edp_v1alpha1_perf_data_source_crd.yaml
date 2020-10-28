@@ -36,14 +36,26 @@ spec:
               type: string
             name:
               type: string
-            codebaseName:
-              type: string
             config:
-              type: string
+              properties:
+                jobNames:
+                  anyOf:
+                    - type: null
+                    - type: array
+                projectKeys:
+                  anyOf:
+                    - type: null
+                    - type: array
+                url:
+                  type: string
+                credentialName:
+                  type: string
+              required:
+                - url
+                - credentialName
           required:
             - perfServerName
             - type
             - name
-            - codebaseName
             - config
           type: object
