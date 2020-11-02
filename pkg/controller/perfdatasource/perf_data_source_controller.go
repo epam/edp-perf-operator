@@ -73,6 +73,7 @@ func (r *ReconcilePerfDataSource) Reconcile(request reconcile.Request) (reconcil
 		}
 		return reconcile.Result{}, err
 	}
+	defer r.updateStatus(i)
 
 	ps, err := cluster.GetPerfServerCr(r.client, i.Spec.PerfServerName, i.Namespace)
 	if err != nil {
@@ -95,6 +96,12 @@ func (r *ReconcilePerfDataSource) Reconcile(request reconcile.Request) (reconcil
 
 	rl.Info("Reconciling PerfDataSource has been finished")
 	return reconcile.Result{}, nil
+}
+
+func (r ReconcilePerfDataSource) updateStatus(ds *v1alpha1.PerfDataSource) {
+	if err := r.client.Status().Update(context.TODO(), ds); err != nil {
+		_ = r.client.Update(context.TODO(), ds)
+	}
 }
 
 func (r ReconcilePerfDataSource) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {

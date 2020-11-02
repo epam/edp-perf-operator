@@ -19,10 +19,20 @@ type PutDataSource struct {
 func (h PutDataSource) ServeRequest(dataSource *v1alpha1.PerfDataSource) error {
 	log.Info("start creating/updating data source in PERF", "name", dataSource.Name)
 	if err := h.tryToPutDataSource(dataSource); err != nil {
+		setFailedStatus(dataSource)
 		return err
 	}
+	setSuccessStatus(dataSource)
 	log.Info("PERF DataSource has been created.", "name", dataSource.Name)
 	return nil
+}
+
+func setFailedStatus(ds *v1alpha1.PerfDataSource) {
+	ds.Status.Status = "error"
+}
+
+func setSuccessStatus(ds *v1alpha1.PerfDataSource) {
+	ds.Status.Status = "created"
 }
 
 func (h PutDataSource) tryToPutDataSource(dsResource *v1alpha1.PerfDataSource) error {
