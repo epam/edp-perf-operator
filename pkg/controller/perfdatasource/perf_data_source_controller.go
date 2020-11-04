@@ -6,9 +6,11 @@ import (
 	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
 	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasource/chain"
 	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
+	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -44,7 +46,11 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			return false
+			oldJn := e.ObjectOld.(*v1alpha1.PerfDataSource).Spec.Config.JobNames
+			newJn := e.ObjectNew.(*v1alpha1.PerfDataSource).Spec.Config.JobNames
+			oldPk := e.ObjectOld.(*v1alpha1.PerfDataSource).Spec.Config.ProjectKeys
+			newPk := e.ObjectNew.(*v1alpha1.PerfDataSource).Spec.Config.ProjectKeys
+			return dataSourceUpdated(oldJn, newJn) || dataSourceUpdated(oldPk, newPk)
 		},
 	}
 
@@ -53,6 +59,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	return nil
+}
+
+func dataSourceUpdated(old, new []string) bool {
+	common.SortArray(old)
+	common.SortArray(new)
+	return !reflect.DeepEqual(old, new)
 }
 
 var _ reconcile.Reconciler = &ReconcilePerfDataSource{}

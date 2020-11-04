@@ -3,6 +3,7 @@ package command
 import (
 	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
 	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
+	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
 	"strings"
 )
 
@@ -33,6 +34,14 @@ type DataSourceSonarConfig struct {
 	Password    string   `json:"password"`
 }
 
+type DataSourceConfigDto struct {
+	Type       string
+	ApiUrl     string
+	Username   string
+	Password   string
+	Parameters []string
+}
+
 func ConvertToDataSourceCreateCommand(ds *v1alpha1.PerfDataSource, username, password string) DataSourceCommand {
 	if Jenkins == DataSourceType(strings.ToUpper(ds.Spec.Type)) {
 		return getJenkinsDsCreateCommand(ds, username, password)
@@ -40,11 +49,11 @@ func ConvertToDataSourceCreateCommand(ds *v1alpha1.PerfDataSource, username, pas
 	return getSonarDsCreateCommand(ds, username, password)
 }
 
-func ConvertToDataSourceUpdateCommand(ds *v1alpha1.PerfDataSource, dsReq dto.DataSource) DataSourceCommand {
-	if Jenkins == DataSourceType(ds.Spec.Type) {
-		return getJenkinsDsUpdateCommand(ds, dsReq)
+func ConvertToDataSourceUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
+	if Jenkins == DataSourceType(conf.Type) {
+		return getJenkinsDsUpdateCommand(dsReq, conf)
 	}
-	return getSonarDsUpdateCommand(ds, dsReq)
+	return getSonarDsUpdateCommand(dsReq, conf)
 }
 
 func getSonarDsCreateCommand(ds *v1alpha1.PerfDataSource, username string, password string) DataSourceCommand {
@@ -60,15 +69,16 @@ func getSonarDsCreateCommand(ds *v1alpha1.PerfDataSource, username string, passw
 	}
 }
 
-func getSonarDsUpdateCommand(ds *v1alpha1.PerfDataSource, dsReq dto.DataSource) DataSourceCommand {
+func getSonarDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
 	return DataSourceCommand{
 		Id:   dsReq.Id,
 		Name: dsReq.Name,
 		Type: DataSourceType(strings.ToUpper(dsReq.Type)),
 		Config: DataSourceSonarConfig{
-			ProjectKeys: append(dsReq.Config["projectKeys"].([]string), ds.Spec.Config.ProjectKeys...),
-			Url:         dsReq.Config["url"].(string),
-			Username:    dsReq.Config["username"].(string),
+			ProjectKeys: append(common.ConvertToStringArray(dsReq.Config["projectKeys"]), conf.Parameters...),
+			Url:         conf.ApiUrl,
+			Username:    conf.Username,
+			Password:    conf.Password,
 		},
 	}
 }
@@ -86,15 +96,16 @@ func getJenkinsDsCreateCommand(ds *v1alpha1.PerfDataSource, username string, pas
 	}
 }
 
-func getJenkinsDsUpdateCommand(ds *v1alpha1.PerfDataSource, dsReq dto.DataSource) DataSourceCommand {
+func getJenkinsDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
 	return DataSourceCommand{
 		Id:   dsReq.Id,
 		Name: dsReq.Name,
 		Type: DataSourceType(strings.ToUpper(dsReq.Type)),
 		Config: DataSourceJenkinsConfig{
-			JobNames: append(dsReq.Config["jobNames"].([]string), ds.Spec.Config.JobNames...),
-			Url:      dsReq.Config["url"].(string),
-			Username: dsReq.Config["username"].(string),
+			JobNames: append(common.ConvertToStringArray(dsReq.Config["jobNames"]), conf.Parameters...),
+			Url:      conf.ApiUrl,
+			Username: conf.Username,
+			Password: conf.Password,
 		},
 	}
 }
