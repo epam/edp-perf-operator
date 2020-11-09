@@ -1,0 +1,11 @@
+{{- if .Values.perf.integration -}}
+  {{- if .Values.perf.luminate.enabled -}}
+apiVersion: v1
+data:
+  apiUrl: {{ .Values.perf.luminate.apiUrl }}
+  secretName: {{ .Values.perf.luminate.secretName }}
+kind: ConfigMap
+metadata:
+  name: luminatesec-conf
+  {{end}}
+{{end}}
