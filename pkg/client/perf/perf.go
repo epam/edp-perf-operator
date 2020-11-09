@@ -137,20 +137,11 @@ func (c PerfClientAdapter) GetProject(name string) (ds *dto.PerfProject, err err
 
 func (c PerfClientAdapter) ProjectExists(name string) (bool, error) {
 	log.Info("start checking project for existence", "name", name)
-	resp, err := c.client.R().
-		SetHeader("Content-Type", "application/json").
-		SetQueryParam("name", name).
-		Get("/api/v2/nodes/check/name")
+	project, err := c.GetProject(name)
 	if err != nil {
-		return false, errors.Wrapf(err, "couldn't check %v project for existence.", name)
+		return false, err
 	}
-	if resp.IsError() {
-		if resp.StatusCode() == 400 {
-			return true, nil
-		}
-		return false, errors.Errorf("couldn't check %v project for existence.. Status - %v", name, resp.StatusCode())
-	}
-	return false, nil
+	return project != nil, nil
 }
 
 func (c PerfClientAdapter) getProjects() ([]dto.PerfProject, error) {
