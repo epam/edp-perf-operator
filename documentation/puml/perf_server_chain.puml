@@ -1,0 +1,14 @@
+@startuml
+start
+:PerfServer CR;
+:Ensure Connection to Perf Server;
+:Update Status;
+#lightgreen:Put EDP Component;
+stop
+
+legend
+|= |= Component |
+|<back:#lightyellow>   </back>| Perf Server |
+|<back:#lightgreen>   </back>| EDP Component |
+endlegend
+@enduml

@@ -1,0 +1,23 @@
+@startuml
+start
+:PerfDataSource CR;
+:Put PerfServer owner to CR;
+:Check for existence of data source in PERF;
+if (exists) then (yes)
+    if (Does data source activated?) then (yes)
+        :Update data source entity in PERF;
+    else (no)
+        :Activate data source entity in PERF;
+        :Update data source entity in PERF;
+    endif
+else (no)
+    :Create data source entity in PERF;
+endif
+:Update Status;
+stop
+
+legend
+|= |= Component |
+|<back:#lightyellow>   </back>| Perf data source |
+endlegend
+@enduml

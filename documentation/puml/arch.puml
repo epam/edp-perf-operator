@@ -1,0 +1,63 @@
+@startuml
+
+skinparam class {
+    BackgroundColor #white
+	BackgroundColor<<wip>> LightGoldenRodYellow
+	BackgroundColor<<tbd>> Khaki
+}
+
+package perf-operator {
+    class PerfServer {
+        -- spec --
+        String apiUrl
+        String rootUrl
+        String credentialName
+        String projectName
+        -- status --
+        Boolean available
+        String detailedMessage
+        Time lastTimeUpdated
+    }
+
+    PerfServerSecret "1" *-l- "1" PerfServer : secret
+    class PerfServerSecret <Secret> {
+        -- data --
+        String username
+        String password
+    }
+
+    LuminateSecret "1" *-l- "1" PerfServer : secret
+    class LuminateSecret <Secret> {
+        -- data --
+        String username
+        String password
+    }
+
+    class PerfDataSource {
+        -- spec --
+        String name
+        String type
+        DataSourceConfig config
+        String perfServerName
+        -- status --
+        String status
+    }
+
+    PerfDataSource "1" *-l- "1" DataSourceConfig : internal structure
+    class DataSourceConfig {
+      []String jobNames
+      []String projectKeys
+      String url
+    }
+
+}
+
+EdpComponent <-- PerfServer : creates, owns
+
+legend
+|<back:LightGoldenRodYellow>    </back>| Work In Progress |
+|<back:White>    </back>| Implemented |
+|<back:Khaki>    </back>| TBD |
+endlegend
+
+@enduml
