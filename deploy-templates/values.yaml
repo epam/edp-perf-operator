@@ -9,12 +9,12 @@ image:
 
 perf:
   integration: true
-  luminate:
-    enabled: true
-    apiUrl: "https://api.epam.luminatesec.com"
-    secretName: "luminate-secret"
   name: "epam-perf"
   apiUrl: "https://perf.delivery.epam.com"
   rootUrl: "https://perf.delivery.epam.com"
   credentialName: "epam-perf-user"
   projectName: "EPMD-EDP"
+  luminate:
+    enabled: true
+    apiUrl: "https://api.epam.luminatesec.com"
+    credentialName: "luminate-secret"

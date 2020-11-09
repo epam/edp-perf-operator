@@ -58,7 +58,7 @@ func GetPerfCredentials(client client.Client, secretName, namespace string) (*dt
 
 	lumClient := luminate.NewLuminateRestClient(cm.Data["apiUrl"])
 
-	lumSecret, err := cluster.GetSecret(client, cm.Data["secretName"], namespace)
+	lumSecret, err := cluster.GetSecret(client, cm.Data["credentialName"], namespace)
 	if err != nil {
 		return nil, err
 	}

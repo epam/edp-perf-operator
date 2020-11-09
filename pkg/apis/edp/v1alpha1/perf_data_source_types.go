@@ -20,10 +20,9 @@ type PerfDataSourceSpec struct {
 }
 
 type DataSourceConfig struct {
-	JobNames       []string `json:"jobNames"`
-	ProjectKeys    []string `json:"projectKeys"`
-	Url            string   `json:"url"`
-	CredentialName string   `json:"credentialName"`
+	JobNames    []string `json:"jobNames"`
+	ProjectKeys []string `json:"projectKeys"`
+	Url         string   `json:"url"`
 }
 
 // PerfDataSourceStatus defines the observed state of PerfDataSource

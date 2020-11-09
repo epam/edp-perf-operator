@@ -18,7 +18,12 @@ type PutDataSource struct {
 	perfClient perf.PerfClient
 }
 
-const jenkinsDataSourceType = "JENKINS"
+const (
+	jenkinsDataSourceType = "JENKINS"
+
+	jenkinsDataSourceSecretName = "jenkins-admin-token"
+	sonarDataSourceSecretName   = "sonar-admin-password"
+)
 
 func (h PutDataSource) ServeRequest(dataSource *v1alpha1.PerfDataSource) error {
 	log.Info("start creating/updating data source in PERF", "name", dataSource.Name)
@@ -77,7 +82,7 @@ func (h PutDataSource) tryToUpdateDataSource(dsResource *v1alpha1.PerfDataSource
 		return nil
 	}
 
-	s, err := cluster.GetSecret(h.client, dsResource.Spec.Config.CredentialName, dsResource.Namespace)
+	s, err := cluster.GetSecret(h.client, getSecretName(dsResource.Spec.Type), dsResource.Namespace)
 	if err != nil {
 		return err
 	}
@@ -116,7 +121,7 @@ func getMissingElementsInDataSource(a, b []string) []string {
 }
 
 func (h PutDataSource) createDataSource(projectName string, dsResource *v1alpha1.PerfDataSource) error {
-	s, err := cluster.GetSecret(h.client, dsResource.Spec.Config.CredentialName, dsResource.Namespace)
+	s, err := cluster.GetSecret(h.client, getSecretName(dsResource.Spec.Type), dsResource.Namespace)
 	if err != nil {
 		return err
 	}
@@ -124,4 +129,11 @@ func (h PutDataSource) createDataSource(projectName string, dsResource *v1alpha1
 	dsCommand := command.ConvertToDataSourceCreateCommand(dsResource,
 		string(s.Data["username"]), string(s.Data["password"]))
 	return h.perfClient.CreateDataSource(projectName, dsCommand)
+}
+
+func getSecretName(dsType string) string {
+	if dsType == jenkinsDataSourceType {
+		return jenkinsDataSourceSecretName
+	}
+	return sonarDataSourceSecretName
 }

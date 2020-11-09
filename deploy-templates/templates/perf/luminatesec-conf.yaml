@@ -3,7 +3,7 @@
 apiVersion: v1
 data:
   apiUrl: {{ .Values.perf.luminate.apiUrl }}
-  secretName: {{ .Values.perf.luminate.secretName }}
+  credentialName: {{ .Values.perf.luminate.credentialName }}
 kind: ConfigMap
 metadata:
   name: luminatesec-conf
