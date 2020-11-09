@@ -10,5 +10,4 @@ spec:
       - /job1
       - /job2
     url: stub-url
-    credentialName: stub-creds
   perfServerName: epam-perf

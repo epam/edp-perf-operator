@@ -48,11 +48,8 @@ spec:
                     - type: array
                 url:
                   type: string
-                credentialName:
-                  type: string
               required:
                 - url
-                - credentialName
           required:
             - perfServerName
             - type
