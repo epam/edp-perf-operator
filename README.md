@@ -88,5 +88,6 @@ In order to install the PERF Operator, follow the steps below:
 ### Related Articles
 * [Architecture Scheme of PERF Operator](documentation/arch.md)
 * [PERF server controller](documentation/perf_server_controller.md)
-* [PERF server controller](documentation/perf_data_source_controller.md)
+* [PERF data source controller](documentation/perf_data_source_controller.md)
+* [PERF integrating](documentation/perf_integrating.md)
 * [Local development](documentation/local_development.md)
