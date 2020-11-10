@@ -20,16 +20,13 @@ func (h CheckConnectionToPerf) ServeRequest(server *v1alpha1.PerfServer) error {
 	log.Info("start checking connection to PERF", "url", server.Spec.RootUrl)
 	connected, err := h.perfClient.Connected()
 	if err != nil {
-		return err
-	}
-
-	if !connected {
-		server.Status.Available = false
+		server.Status.Available = connected
 		err := errors.Wrapf(err, "couldn't connect to PERF instance with %v url", server.Spec.RootUrl)
 		server.Status.DetailedMessage = err.Error()
 		return err
 	}
-	server.Status.Available = true
+
+	server.Status.Available = connected
 	server.Status.DetailedMessage = "connected"
 
 	h.updateStatus(server)

@@ -86,6 +86,8 @@ func getIcon() (*string, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
+
 	reader := bufio.NewReader(f)
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
