@@ -1,14 +1,14 @@
 @startuml
 start
 :PerfServer CR;
-:Ensure Connection to Perf Server;
+:Ensure Connection to PerfServer;
 :Update Status;
 #lightgreen:Put EDP Component;
 stop
 
 legend
 |= |= Component |
-|<back:#lightyellow>   </back>| Perf Server |
+|<back:#lightyellow>   </back>| PerfServer |
 |<back:#lightgreen>   </back>| EDP Component |
 endlegend
 @enduml

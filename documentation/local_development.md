@@ -1,5 +1,9 @@
-## Local Development
-### Requirements
+# Local Development
+
+Inspect the list of requirements and the launch flow necessary for the development of the PERF operator. 
+
+## Requirements
+
 * Golang version higher than 1.13;
 
 >_**NOTE**: The GOPATH and GOROOT environment variables should be added in PATH._
@@ -11,7 +15,8 @@
 * Configured access to the VCS, for details, refer to the [Gerrit Setup for Developer](https://kb.epam.com/display/EPMDEDP/Gerrit+Setup+for+Developer) page;
 * GoLand IntelliJ IDEA or another IDE.
 
-### Operator Launch
+## Operator Launch
+
 In order to run the operator, follow the steps below:
 
 1. Clone repository;
@@ -19,11 +24,12 @@ In order to run the operator, follow the steps below:
 ![add_configuration](../readme-resource/add_configuration.png "add_configuration") 
 3. In Configuration tab, fill in the following:
 
-    3.1. In the Field field, indicate the path to the main.go file;
+    3.1. In the Files field, indicate the path to the main.go file;
     
     3.2. In the Working directory field, indicate the path to the operator;
     
     3.3. In the Environment field, specify the platform name (OpenShift/Kubernetes);
+    
    ![build-config](../readme-resource/build_config.png "build-config") 
 
 4. Run 'go build main.go' (Shift+F10);
@@ -39,7 +45,7 @@ In order to run the operator, follow the steps below:
 {"level":"info","ts":1580910959.1731281,"logger":"kubebuilder.controller","msg":"Starting EventSource","controller":"perf-controller","source":"kind source: /, Kind="}
 ```
 
-### Exceptional Cases
+## Exceptional Cases
 
 ##### CASE 1
 

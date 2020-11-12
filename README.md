@@ -5,7 +5,8 @@ and architecture scheme.
 
 ## Overview
 
-PERF Operator is an EDP operator that is responsible for integrating with PERF. It creates and updates data source in PERF. 
+PERF Operator is an EDP operator that is responsible for for integration with the Project Performance Board ([PERF board](https://kb.epam.com/display/EPMDMO/Project+Performance+Board)), 
+maintenance, and creation of the data source in the delivery metrics. 
 Operator installation can be applied on two container orchestration platforms: OpenShift and Kubernetes.
 
 _**NOTE:** Operator is platform-independent, that is why there is a unified instruction for deploying._
@@ -31,7 +32,7 @@ In order to install the PERF Operator, follow the steps below:
 
     _**NOTE:** It is highly recommended to use the latest released version._
 
-3. It is necessary to create such secrets manually:  
+3. Create manually the corresponding secrets:  
 
     3.1 OpenShift:
     ```bash
@@ -46,28 +47,32 @@ In order to install the PERF Operator, follow the steps below:
    
     kubectl -n <edp_cicd_project> create secret generic <perf.luminate.credentialName> --from-literal=username=<username_to_luminate> --from-literal=password=<password_to_luminate>
     ```
-    >_INFO: Description of `<perf.credentialName>` and `<perf.luminate.credentialName>` parameters are located below._
+    >_**INFO**: The `<perf.credentialName>` and `<perf.luminate.credentialName>` parameters are described below._
     
-    _**IMPORTANT**: At this moment PERF integration works only on top of luminate service, so creation of luminate secret is required._
+    **IMPORTANT**: Pay attention that at this point, the PERF integration works only on the top of Luminate service so it is required to create the Luminate secret.
     
-   Full available chart parameters list:
-   ```
-     - chart_version                                 # a version of PERF operator Helm chart;
+4. Deploy operator:
+  
+     Full available chart parameters list:
+     
+   ```bash
+     - chart_version                                 # a version of the PERF operator Helm chart;
      - global.edpName                                # a namespace or a project name (in case of OpenShift);
      - global.platform                               # OpenShift or Kubernetes;
      - image.name                                    # EDP image. The released image can be found on [Dockerhub](https://hub.docker.com/r/epamedp/perf-operator);
      - image.version                                 # EDP tag. The released image can be found on [Dockerhub](https://hub.docker.com/r/epamedp/perf-operator/tags);
-     - perf.integration                              # Flag to enable/disable PERF integration (eg true/false);
+     - perf.integration                              # Flag to enable/disable PERF integration (e.g. true/false);
      - perf.name                                     # PerfServer CR name;
      - perf.apiUrl                                   # API URL for development;
      - perf.rootUrl                                  # URL to PERF project;
-     - perf.credentialName                           # Name of secret with credentials to PERF server;
-     - perf.projectName                              # Name of project in PERF;
-     - perf.luminate.enabled                         # Flag to enable/disable Luminate integration (eg true/false);
+     - perf.credentialName                           # Name of a secret with credentials to the PERF server;
+     - perf.projectName                              # Name of a project in PERF;
+     - perf.luminate.enabled                         # Flag to enable/disable Luminate integration (e.g. true/false);
      - perf.luminate.apiUrl                          # API URL for development;
-     - perf.luminate.credentialName                  # Name of secret with Luminate credentials;
+     - perf.luminate.credentialName                  # Name of a secret with Luminate credentials;
    ```
-4. Install operator in the <edp_cicd_project> namespace with the helm command; find below the installation command example:
+   
+5. Install operator in the <edp_cicd_project> namespace with the helm command; find below the installation command example:
     ```bash
         helm install perf-operator epamedp/perf-operator --version <chart_version> --namespace <edp_cicd_project> \
         --set name=perf-operator \
@@ -83,11 +88,16 @@ In order to install the PERF Operator, follow the steps below:
         --set perf.luminate.apiUrl=<api_url> \
         --set perf.luminate.credentialName=<credential_name> \
     ```
-5. Check the <edp_cicd_project> namespace that should contain Deployment with your operator in a running status.
+6. Check the <edp_cicd_project> namespace that should contain operator deployment with your operator in a running status.
+
+
+## Local Development
+
+In order to develop the operator, first set up a local environment. For details, please refer to the [Local Development](documentation/local_development.md) page.
 
 ### Related Articles
+
 * [Architecture Scheme of PERF Operator](documentation/arch.md)
-* [PERF server controller](documentation/perf_server_controller.md)
-* [PERF data source controller](documentation/perf_data_source_controller.md)
-* [PERF integrating](documentation/perf_integrating.md)
-* [Local development](documentation/local_development.md)
+* [PERF Data Source Controller](documentation/perf_data_source_controller.md)
+* [PERF Integration](documentation/perf_integration.md)
+* [PERF Server Controller](documentation/perf_server_controller.md)

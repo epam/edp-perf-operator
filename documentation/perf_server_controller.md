@@ -1,6 +1,7 @@
 # PERF Server Controller
 
-**PERF Server** is the representation of PERF that is used to communicate with PERF API to manage **project** and **data source** entities 
+**PERF Server** is the representation of PERF that is used to communicate with PERF API to manage the **project** and 
+**data source** entities. 
 
 The main purpose of a PERF Server controller is to watch changes in the respective Kubernetes Custom Resource (PerfServer CR)
  and to ensure that the state in that resource is applied in EPAM Delivery Platform.
@@ -11,7 +12,12 @@ Inspect the main steps performed in the reconcile loop on the diagram below:
 
 The diagram above displays the following steps:
 
-- *Ensure Connection to Perf Server*. The controller tries to log in to the specified URL using spec.ApiUrl and spec.credentialName. 
+- *Ensure Connection to PerfServer*. The controller tries to log in to the specified URL using the spec.ApiUrl and spec.credentialName. 
 If connection is not successful, the loop ends up with an error. 
-- *Update Status*. The status update in the respective Perf Server CR.
+- *Update Status*. The status update in the respective PerfServer CR.
 - *Put EDP Component*. Registration of a new component in EDP.
+
+### Related Articles
+
+* [PERF Data Source Controller](../documentation/perf_data_source_controller.md)
+* [PERF Integration](../documentation/perf_integration.md)
