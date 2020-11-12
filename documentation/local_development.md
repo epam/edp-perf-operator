@@ -45,7 +45,7 @@ In order to run the operator, follow the steps below:
 {"level":"info","ts":1580910959.1731281,"logger":"kubebuilder.controller","msg":"Starting EventSource","controller":"perf-controller","source":"kind source: /, Kind="}
 ```
 
-## Exceptional Cases
+## Exceptional Case
 
 ##### CASE 1
 
