@@ -16,7 +16,7 @@ const (
 )
 
 func TestPutOwnerReference_PerfDataSourceContainsPerfServerOwnerReference(t *testing.T) {
-	pds := &v1alpha1.PerfDataSource{
+	pds := &v1alpha1.PerfDataSourceSonar{
 		ObjectMeta: v1.ObjectMeta{
 			OwnerReferences: []v1.OwnerReference{
 				{
@@ -30,11 +30,11 @@ func TestPutOwnerReference_PerfDataSourceContainsPerfServerOwnerReference(t *tes
 }
 
 func TestPutOwnerReference_ShouldSetOwnerReference(t *testing.T) {
-	pds := &v1alpha1.PerfDataSource{
+	pds := &v1alpha1.PerfDataSourceSonar{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfDataSourceSpec{
+		Spec: v1alpha1.PerfDataSourceSonarSpec{
 			PerfServerName: fakeName,
 		},
 	}
@@ -61,11 +61,11 @@ func TestPutOwnerReference_ShouldSetOwnerReference(t *testing.T) {
 }
 
 func TestPutOwnerReference_PerfServerShouldNotBeFound(t *testing.T) {
-	pds := &v1alpha1.PerfDataSource{
+	pds := &v1alpha1.PerfDataSourceSonar{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfDataSourceSpec{
+		Spec: v1alpha1.PerfDataSourceSonarSpec{
 			PerfServerName: fakeName,
 		},
 	}

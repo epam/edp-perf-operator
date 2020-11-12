@@ -1,10 +1,10 @@
-package perfdatasource
+package perfdatasourcesonar
 
 import (
 	"context"
 	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
 	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasource/chain"
+	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasourcesonar/chain"
 	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
 	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
 	"github.com/pkg/errors"
@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	log = logf.Log.WithName("controller_perf_data_source")
+	log = logf.Log.WithName("controller_perf_data_source_sonar")
 )
 
 func Add(mgr manager.Manager) error {
@@ -32,29 +32,27 @@ func Add(mgr manager.Manager) error {
 }
 
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcilePerfDataSource{
+	return &ReconcilePerfDataSourceSonar{
 		client: mgr.GetClient(),
 		scheme: mgr.GetScheme(),
 	}
 }
 
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	c, err := controller.New("perfdatasource-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("perfdatasourcesonar-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			oldJn := e.ObjectOld.(*v1alpha1.PerfDataSource).Spec.Config.JobNames
-			newJn := e.ObjectNew.(*v1alpha1.PerfDataSource).Spec.Config.JobNames
-			oldPk := e.ObjectOld.(*v1alpha1.PerfDataSource).Spec.Config.ProjectKeys
-			newPk := e.ObjectNew.(*v1alpha1.PerfDataSource).Spec.Config.ProjectKeys
-			return dataSourceUpdated(oldJn, newJn) || dataSourceUpdated(oldPk, newPk)
+			oldPk := e.ObjectOld.(*v1alpha1.PerfDataSourceSonar).Spec.Config.ProjectKeys
+			newPk := e.ObjectNew.(*v1alpha1.PerfDataSourceSonar).Spec.Config.ProjectKeys
+			return dataSourceUpdated(oldPk, newPk)
 		},
 	}
 
-	if err = c.Watch(&source.Kind{Type: &v1alpha1.PerfDataSource{}}, &handler.EnqueueRequestForObject{}, p); err != nil {
+	if err = c.Watch(&source.Kind{Type: &v1alpha1.PerfDataSourceSonar{}}, &handler.EnqueueRequestForObject{}, p); err != nil {
 		return err
 	}
 
@@ -67,18 +65,18 @@ func dataSourceUpdated(old, new []string) bool {
 	return !reflect.DeepEqual(old, new)
 }
 
-var _ reconcile.Reconciler = &ReconcilePerfDataSource{}
+var _ reconcile.Reconciler = &ReconcilePerfDataSourceSonar{}
 
-type ReconcilePerfDataSource struct {
+type ReconcilePerfDataSourceSonar struct {
 	client client.Client
 	scheme *runtime.Scheme
 }
 
-func (r *ReconcilePerfDataSource) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcilePerfDataSourceSonar) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	rl := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	rl.V(2).Info("Reconciling PerfDataSource")
+	rl.V(2).Info("Reconciling PerfDataSourceSonar")
 
-	i := &v1alpha1.PerfDataSource{}
+	i := &v1alpha1.PerfDataSourceSonar{}
 	if err := r.client.Get(context.TODO(), request.NamespacedName, i); err != nil {
 		if k8serrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
@@ -106,17 +104,17 @@ func (r *ReconcilePerfDataSource) Reconcile(request reconcile.Request) (reconcil
 		return reconcile.Result{}, err
 	}
 
-	rl.Info("Reconciling PerfDataSource has been finished")
+	rl.Info("Reconciling PerfDataSourceSonar has been finished")
 	return reconcile.Result{}, nil
 }
 
-func (r ReconcilePerfDataSource) updateStatus(ds *v1alpha1.PerfDataSource) {
+func (r ReconcilePerfDataSourceSonar) updateStatus(ds *v1alpha1.PerfDataSourceSonar) {
 	if err := r.client.Status().Update(context.TODO(), ds); err != nil {
 		_ = r.client.Update(context.TODO(), ds)
 	}
 }
 
-func (r ReconcilePerfDataSource) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {
+func (r ReconcilePerfDataSourceSonar) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {
 	credentials, err := perf.GetPerfCredentials(r.client, secretName, namespace)
 	if err != nil {
 		return nil, err
