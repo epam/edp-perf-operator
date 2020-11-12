@@ -7,28 +7,27 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// PerfDataSourceSpec defines the desired state of PerfDataSource
+// PerfDataSourceSonarSpec defines the desired state of PerfDataSourceSonar
 // +k8s:openapi-gen=true
-type PerfDataSourceSpec struct {
+type PerfDataSourceSonarSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
-	Name           string           `json:"name"`
-	Type           string           `json:"type"`
-	Config         DataSourceConfig `json:"config"`
-	PerfServerName string           `json:"perfServerName"`
+	Name           string                `json:"name"`
+	Type           string                `json:"type"`
+	Config         DataSourceSonarConfig `json:"config"`
+	PerfServerName string                `json:"perfServerName"`
 }
 
-type DataSourceConfig struct {
-	JobNames    []string `json:"jobNames"`
+type DataSourceSonarConfig struct {
 	ProjectKeys []string `json:"projectKeys"`
 	Url         string   `json:"url"`
 }
 
-// PerfDataSourceStatus defines the observed state of PerfDataSource
+// PerfDataSourceSonartatus defines the observed state of PerfDataSourceSonar
 // +k8s:openapi-gen=true
 
-type PerfDataSourceStatus struct {
+type PerfDataSourceSonarStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
@@ -37,25 +36,25 @@ type PerfDataSourceStatus struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// PerfDataSource is the Schema for the perfdatasources API
+// PerfDataSourceSonar is the Schema for the perfdatasourcessonars API
 // +k8s:openapi-gen=true
-type PerfDataSource struct {
+type PerfDataSourceSonar struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PerfDataSourceSpec   `json:"spec,omitempty"`
-	Status PerfDataSourceStatus `json:"status,omitempty"`
+	Spec   PerfDataSourceSonarSpec   `json:"spec,omitempty"`
+	Status PerfDataSourceSonarStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// PerfDataSourceList contains a list of PerfDataSource
-type PerfDataSourceList struct {
+// PerfDataSourceSonarList contains a list of PerfDataSourceSonar
+type PerfDataSourceSonarList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []PerfDataSource `json:"items"`
+	Items           []PerfDataSourceSonar `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&PerfDataSource{}, &PerfDataSourceList{})
+	SchemeBuilder.Register(&PerfDataSourceSonar{}, &PerfDataSourceSonarList{})
 }

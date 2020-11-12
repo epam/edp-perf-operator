@@ -1,0 +1,13 @@
+apiVersion: v2.edp.epam.com/v1alpha1
+kind: PerfDataSourceJenkins
+metadata:
+  name: with1-jenkins
+spec:
+  name: stub-name
+  type: Jenkins
+  config:
+    jobNames:
+      - /job1
+      - /job2
+    url: stub-url
+  perfServerName: epam-perf

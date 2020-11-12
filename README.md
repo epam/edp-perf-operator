@@ -5,7 +5,7 @@ and architecture scheme.
 
 ## Overview
 
-PERF Operator is an EDP operator that is responsible for integrating with PERF. 
+PERF Operator is an EDP operator that is responsible for integrating with PERF. It creates and updates data source in PERF. 
 Operator installation can be applied on two container orchestration platforms: OpenShift and Kubernetes.
 
 _**NOTE:** Operator is platform-independent, that is why there is a unified instruction for deploying._

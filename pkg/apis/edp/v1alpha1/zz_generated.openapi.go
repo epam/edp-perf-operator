@@ -11,12 +11,15 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"./pkg/apis/edp/v1alpha1.PerfServer":           schema_pkg_apis_edp_v1alpha1_PerfServer(ref),
-		"./pkg/apis/edp/v1alpha1.PerfServerSpec":       schema_pkg_apis_edp_v1alpha1_PerfServerSpec(ref),
-		"./pkg/apis/edp/v1alpha1.PerfServerStatus":     schema_pkg_apis_edp_v1alpha1_PerfStatus(ref),
-		"./pkg/apis/edp/v1alpha1.PerfDataSource":       schema_pkg_apis_edp_v1alpha1_PerfDataSource(ref),
-		"./pkg/apis/edp/v1alpha1.PerfDataSourceSpec":   schema_pkg_apis_edp_v1alpha1_PerfDataSourceSpec(ref),
-		"./pkg/apis/edp/v1alpha1.PerfDataSourceStatus": schema_pkg_apis_edp_v1alpha1_PerfDataSourceStatus(ref),
+		"./pkg/apis/edp/v1alpha1.PerfServer":                  schema_pkg_apis_edp_v1alpha1_PerfServer(ref),
+		"./pkg/apis/edp/v1alpha1.PerfServerSpec":              schema_pkg_apis_edp_v1alpha1_PerfServerSpec(ref),
+		"./pkg/apis/edp/v1alpha1.PerfServerStatus":            schema_pkg_apis_edp_v1alpha1_PerfStatus(ref),
+		"./pkg/apis/edp/v1alpha1.PerfDataSourceJenkins":       schema_pkg_apis_edp_v1alpha1_PerfDataSourceJenkins(ref),
+		"./pkg/apis/edp/v1alpha1.PerfDataSourceJenkinsSpec":   schema_pkg_apis_edp_v1alpha1_PerfDataSourceJenkinsSpec(ref),
+		"./pkg/apis/edp/v1alpha1.PerfDataSourceJenkinsStatus": schema_pkg_apis_edp_v1alpha1_PerfDataSourceJenkinsStatus(ref),
+		"./pkg/apis/edp/v1alpha1.PerfDataSourceSonar":         schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonar(ref),
+		"./pkg/apis/edp/v1alpha1.PerfDataSourceSonarSpec":     schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonarSpec(ref),
+		"./pkg/apis/edp/v1alpha1.PerfDataSourceSonarStatus":   schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonarStatus(ref),
 	}
 }
 
@@ -114,11 +117,11 @@ func schema_pkg_apis_edp_v1alpha1_PerfStatus(ref common.ReferenceCallback) commo
 	}
 }
 
-func schema_pkg_apis_edp_v1alpha1_PerfDataSource(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_edp_v1alpha1_PerfDataSourceJenkins(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PerfDataSource is the Schema for the perfdatasources API",
+				Description: "PerfDataSourceJenkins is the Schema for the perfdatasourcesjenkinses API",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -154,15 +157,15 @@ func schema_pkg_apis_edp_v1alpha1_PerfDataSource(ref common.ReferenceCallback) c
 			},
 		},
 		Dependencies: []string{
-			"./pkg/apis/edp/v1alpha1.PerfDataSourceSpec", "./pkg/apis/edp/v1alpha1.PerfDataSourceStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"./pkg/apis/edp/v1alpha1.PerfDataSourceJenkinsSpec", "./pkg/apis/edp/v1alpha1.PerfDataSourceJenkinsStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
-func schema_pkg_apis_edp_v1alpha1_PerfDataSourceSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_edp_v1alpha1_PerfDataSourceJenkinsSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PerfDataSourceSpec defines the desired state of PerfDataSource",
+				Description: "PerfDataSourceJenkinsSpec defines the desired state of PerfDataSourceJenkins",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"perfServerName": {
@@ -197,11 +200,105 @@ func schema_pkg_apis_edp_v1alpha1_PerfDataSourceSpec(ref common.ReferenceCallbac
 	}
 }
 
-func schema_pkg_apis_edp_v1alpha1_PerfDataSourceStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_pkg_apis_edp_v1alpha1_PerfDataSourceJenkinsStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PerfDataSourceStatus defines the observed state of PerfDataSourceStream",
+				Description: "PerfDataSourceJenkinsStatus defines the observed state of PerfDataSourceJenkinsStream",
+				Type:        []string{"object"},
+			},
+		},
+	}
+}
+
+func schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonar(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "PerfDataSourceSonar is the Schema for the perfdatasourcessonars API",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/edp/v1alpha1.PerfDataSourceSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/edp/v1alpha1.PerfDataSourceStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"./pkg/apis/edp/v1alpha1.PerfDataSourceSonarSpec", "./pkg/apis/edp/v1alpha1.PerfDataSourceSonarStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonarSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "PerfDataSourceSonarSpec defines the desired state of PerfDataSourceSonar",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"perfServerName": {
+						SchemaProps: spec.SchemaProps{
+							Description: "INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"type": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"config": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"object"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"perfServerName", "type", "name", "config"},
+			},
+		},
+	}
+}
+
+func schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonarStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "PerfDataSourceSonarStatus defines the observed state of PerfDataSourceSonarStream",
 				Type:        []string{"object"},
 			},
 		},

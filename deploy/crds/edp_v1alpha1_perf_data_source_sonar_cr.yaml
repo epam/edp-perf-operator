@@ -1,13 +1,13 @@
 apiVersion: v2.edp.epam.com/v1alpha1
-kind: PerfDataSource
+kind: PerfDataSourceSonar
 metadata:
-  name: with1-jenkins
+  name: with1-sonar
 spec:
   name: stub-name
-  type: Jenkins
+  type: Sonar
   config:
-    jobNames:
-      - /job1
-      - /job2
+    projectKeys:
+      - key1
+      - key2
     url: stub-url
   perfServerName: epam-perf
