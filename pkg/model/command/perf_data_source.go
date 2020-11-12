@@ -42,21 +42,7 @@ type DataSourceConfigDto struct {
 	Parameters []string
 }
 
-func ConvertToDataSourceCreateCommand(ds *v1alpha1.PerfDataSource, username, password string) DataSourceCommand {
-	if Jenkins == DataSourceType(strings.ToUpper(ds.Spec.Type)) {
-		return getJenkinsDsCreateCommand(ds, username, password)
-	}
-	return getSonarDsCreateCommand(ds, username, password)
-}
-
-func ConvertToDataSourceUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
-	if Jenkins == DataSourceType(conf.Type) {
-		return getJenkinsDsUpdateCommand(dsReq, conf)
-	}
-	return getSonarDsUpdateCommand(dsReq, conf)
-}
-
-func getSonarDsCreateCommand(ds *v1alpha1.PerfDataSource, username string, password string) DataSourceCommand {
+func GetSonarDsCreateCommand(ds *v1alpha1.PerfDataSourceSonar, username string, password string) DataSourceCommand {
 	return DataSourceCommand{
 		Name: ds.Spec.Name,
 		Type: DataSourceType(strings.ToUpper(ds.Spec.Type)),
@@ -69,7 +55,7 @@ func getSonarDsCreateCommand(ds *v1alpha1.PerfDataSource, username string, passw
 	}
 }
 
-func getSonarDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
+func GetSonarDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
 	return DataSourceCommand{
 		Id:   dsReq.Id,
 		Name: dsReq.Name,
@@ -83,7 +69,7 @@ func getSonarDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) Da
 	}
 }
 
-func getJenkinsDsCreateCommand(ds *v1alpha1.PerfDataSource, username string, password string) DataSourceCommand {
+func GetJenkinsDsCreateCommand(ds *v1alpha1.PerfDataSourceJenkins, username string, password string) DataSourceCommand {
 	return DataSourceCommand{
 		Name: ds.Spec.Name,
 		Type: DataSourceType(strings.ToUpper(ds.Spec.Type)),
@@ -96,7 +82,7 @@ func getJenkinsDsCreateCommand(ds *v1alpha1.PerfDataSource, username string, pas
 	}
 }
 
-func getJenkinsDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
+func GetJenkinsDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
 	return DataSourceCommand{
 		Id:   dsReq.Id,
 		Name: dsReq.Name,
