@@ -14,9 +14,12 @@ rules:
       - perfservers
       - perfservers/status
       - perfservers/finalizers
-      - perfdatasources
-      - perfdatasources/status
-      - perfdatasources/finalizers
+      - perfdatasourcejenkinses
+      - perfdatasourcejenkinses/finalizers
+      - perfdatasourcejenkinses/status
+      - perfdatasourcesonars
+      - perfdatasourcesonars/finalizers
+      - perfdatasourcesonars/status
       - edpcomponents
       - edpcomponents/finalizers
       - edpcomponents/status
