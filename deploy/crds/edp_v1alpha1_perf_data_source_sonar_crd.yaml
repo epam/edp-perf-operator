@@ -32,6 +32,8 @@ spec:
           properties:
             perfServerName:
               type: string
+            codebaseName:
+              type: string
             type:
               type: string
             name:
@@ -47,6 +49,7 @@ spec:
                 - url
           required:
             - perfServerName
+            - codebaseName
             - type
             - name
             - config

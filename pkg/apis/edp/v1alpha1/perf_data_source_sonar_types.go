@@ -17,6 +17,7 @@ type PerfDataSourceSonarSpec struct {
 	Type           string                `json:"type"`
 	Config         DataSourceSonarConfig `json:"config"`
 	PerfServerName string                `json:"perfServerName"`
+	CodebaseName   string                `json:"codebaseName"`
 }
 
 type DataSourceSonarConfig struct {

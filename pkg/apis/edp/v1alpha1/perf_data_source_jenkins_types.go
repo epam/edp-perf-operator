@@ -17,6 +17,7 @@ type PerfDataSourceJenkinsSpec struct {
 	Type           string                  `json:"type"`
 	Config         DataSourceJenkinsConfig `json:"config"`
 	PerfServerName string                  `json:"perfServerName"`
+	CodebaseName   string                  `json:"codebaseName"`
 }
 
 type DataSourceJenkinsConfig struct {

@@ -1,3 +1,6 @@
 package consts
 
-const PerfServerKind = "PerfServer"
+const (
+	PerfServerKind = "PerfServer"
+	CodebaseKind   = "Codebase"
+)

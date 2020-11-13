@@ -8,7 +8,6 @@ import (
 	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
 	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
 	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/consts"
 	"github.com/epmd-edp/perf-operator/v2/pkg/util/datasource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -41,8 +40,7 @@ func setSuccessStatus(ds *v1alpha1.PerfDataSourceJenkins) {
 }
 
 func (h PutDataSource) tryToPutDataSource(dsResource *v1alpha1.PerfDataSourceJenkins) error {
-	ow := cluster.GetOwnerReference(consts.PerfServerKind, dsResource.GetOwnerReferences())
-	ps, err := cluster.GetPerfServerCr(h.client, ow.Name, dsResource.Namespace)
+	ps, err := cluster.GetPerfServerCr(h.client, dsResource.Spec.PerfServerName, dsResource.Namespace)
 	if err != nil {
 		return err
 	}

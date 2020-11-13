@@ -29,18 +29,18 @@ func (h PutOwnerReference) ServeRequest(ds *v1alpha1.PerfDataSourceJenkins) erro
 
 func (h PutOwnerReference) setPerfOwnerRef(ds *v1alpha1.PerfDataSourceJenkins) error {
 	log.Info("try to set owner ref for perf Jenkins data source", "name", ds.Name)
-	if ow := cluster.GetOwnerReference(consts.PerfServerKind, ds.GetOwnerReferences()); ow != nil {
+	if ow := cluster.GetOwnerReference(consts.CodebaseKind, ds.GetOwnerReferences()); ow != nil {
 		log.Info("PerfDataSourceJenkins already has owner ref",
 			"data source", ds.Name, "owner name", ow.Name)
 		return nil
 	}
 
-	ps, err := cluster.GetPerfServerCr(h.client, ds.Spec.PerfServerName, ds.Namespace)
+	c, err := cluster.GetCodebase(h.client, ds.Spec.CodebaseName, ds.Namespace)
 	if err != nil {
-		return errors.Wrapf(err, "couldn't get %v PerfServer from cluster", ds.Spec.PerfServerName)
+		return errors.Wrapf(err, "couldn't get %v Codebase from cluster", ds.Spec.CodebaseName)
 	}
 
-	if err := controllerutil.SetControllerReference(ps, ds, h.scheme); err != nil {
+	if err := controllerutil.SetControllerReference(c, ds, h.scheme); err != nil {
 		return errors.Wrapf(err, "couldn't set owner ref for %v PerfDataSourceJenkins", ds.Name)
 	}
 

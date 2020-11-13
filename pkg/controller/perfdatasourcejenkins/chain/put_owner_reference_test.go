@@ -1,6 +1,7 @@
 package chain
 
 import (
+	v1alpha12 "github.com/epmd-edp/codebase-operator/v2/pkg/apis/edp/v1alpha1"
 	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,7 +21,7 @@ func TestPutOwnerReference_PerfDataSourceContainsPerfServerOwnerReference(t *tes
 		ObjectMeta: v1.ObjectMeta{
 			OwnerReferences: []v1.OwnerReference{
 				{
-					Kind: "PerfServer",
+					Kind: "Codebase",
 				},
 			},
 		},
@@ -39,7 +40,7 @@ func TestPutOwnerReference_ShouldSetOwnerReference(t *testing.T) {
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	c := &v1alpha12.Codebase{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
@@ -47,11 +48,11 @@ func TestPutOwnerReference_ShouldSetOwnerReference(t *testing.T) {
 	}
 
 	objs := []runtime.Object{
-		pds, ps,
+		pds, c,
 	}
 
 	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, pds, ps)
+	s.AddKnownTypes(v1.SchemeGroupVersion, pds, c)
 
 	ch := PutOwnerReference{
 		scheme: s,
