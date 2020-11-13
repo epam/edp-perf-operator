@@ -23,6 +23,9 @@ rules:
       - edpcomponents
       - edpcomponents/finalizers
       - edpcomponents/status
+      - codebases
+      - codebases/finalizers
+      - codebases/status
     verbs:
       - '*'
 {{ end }}
