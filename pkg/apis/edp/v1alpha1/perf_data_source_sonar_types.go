@@ -36,7 +36,7 @@ type PerfDataSourceSonarStatus struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// PerfDataSourceSonar is the Schema for the perfdatasourcessonars API
+// PerfDataSourceSonar is the Schema for the perfdatasourcesonars API
 // +k8s:openapi-gen=true
 type PerfDataSourceSonar struct {
 	metav1.TypeMeta   `json:",inline"`

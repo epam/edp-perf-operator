@@ -121,7 +121,7 @@ func schema_pkg_apis_edp_v1alpha1_PerfDataSourceJenkins(ref common.ReferenceCall
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PerfDataSourceJenkins is the Schema for the perfdatasourcesjenkinses API",
+				Description: "PerfDataSourceJenkins is the Schema for the perfdatasourcejenkinses API",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -215,7 +215,7 @@ func schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonar(ref common.ReferenceCallba
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PerfDataSourceSonar is the Schema for the perfdatasourcessonars API",
+				Description: "PerfDataSourceSonar is the Schema for the perfdatasourcesonars API",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
