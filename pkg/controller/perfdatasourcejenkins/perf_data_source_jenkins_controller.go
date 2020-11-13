@@ -2,6 +2,7 @@ package perfdatasourcejenkins
 
 import (
 	"context"
+	v1alpha12 "github.com/epmd-edp/codebase-operator/v2/pkg/apis/edp/v1alpha1"
 	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
 	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
 	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasourcejenkins/chain"
@@ -9,7 +10,9 @@ import (
 	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -32,10 +35,21 @@ func Add(mgr manager.Manager) error {
 }
 
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+	scheme := mgr.GetScheme()
+	addKnownTypes(scheme)
 	return &ReconcilePerfDataSourceJenkins{
 		client: mgr.GetClient(),
-		scheme: mgr.GetScheme(),
+		scheme: scheme,
 	}
+}
+
+func addKnownTypes(scheme *runtime.Scheme) {
+	schemeGroupVersion := schema.GroupVersion{Group: "v2.edp.epam.com", Version: "v1alpha1"}
+	scheme.AddKnownTypes(schemeGroupVersion,
+		&v1alpha12.Codebase{},
+		&v1alpha12.CodebaseList{},
+	)
+	metav1.AddToGroupVersion(scheme, schemeGroupVersion)
 }
 
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
