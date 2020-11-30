@@ -26,6 +26,9 @@ rules:
       - codebases
       - codebases/finalizers
       - codebases/status
+      - perfdatasourcegitlabs
+      - perfdatasourcegitlabs/finalizers
+      - perfdatasourcegitlabs/status
     verbs:
       - '*'
 {{ end }}
