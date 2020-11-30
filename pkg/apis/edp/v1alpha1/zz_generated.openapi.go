@@ -20,6 +20,9 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"./pkg/apis/edp/v1alpha1.PerfDataSourceSonar":         schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonar(ref),
 		"./pkg/apis/edp/v1alpha1.PerfDataSourceSonarSpec":     schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonarSpec(ref),
 		"./pkg/apis/edp/v1alpha1.PerfDataSourceSonarStatus":   schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonarStatus(ref),
+		"./pkg/apis/edp/v1alpha1.PerfDataSourceGitLab":        schema_pkg_apis_edp_v1alpha1_PerfDataSourceGitLab(ref),
+		"./pkg/apis/edp/v1alpha1.PerfDataSourceGitLabSpec":    schema_pkg_apis_edp_v1alpha1_PerfDataSourceGitLabSpec(ref),
+		"./pkg/apis/edp/v1alpha1.PerfDataSourceGitLabStatus":  schema_pkg_apis_edp_v1alpha1_PerfDataSourceGitLabStatus(ref),
 	}
 }
 
@@ -299,6 +302,100 @@ func schema_pkg_apis_edp_v1alpha1_PerfDataSourceSonarStatus(ref common.Reference
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "PerfDataSourceSonarStatus defines the observed state of PerfDataSourceSonarStream",
+				Type:        []string{"object"},
+			},
+		},
+	}
+}
+
+func schema_pkg_apis_edp_v1alpha1_PerfDataSourceGitLab(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "PerfDataSourceGitLab is the Schema for the perfdatasourcegitlabs API",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/edp/v1alpha1.PerfDataSourceGitLabSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/edp/v1alpha1.PerfDataSourceGitLabStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"./pkg/apis/edp/v1alpha1.PerfDataSourceGitLabSpec", "./pkg/apis/edp/v1alpha1.PerfDataSourceGitLabStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_edp_v1alpha1_PerfDataSourceGitLabSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "PerfDataSourceGitLabSpec defines the desired state of PerfDataSourceGitLab",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"perfServerName": {
+						SchemaProps: spec.SchemaProps{
+							Description: "INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"type": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"config": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"object"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"perfServerName", "type", "name", "config"},
+			},
+		},
+	}
+}
+
+func schema_pkg_apis_edp_v1alpha1_PerfDataSourceGitLabStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "PerfDataSourceGitLabStatus defines the observed state of PerfDataSourceGitLabStream",
 				Type:        []string{"object"},
 			},
 		},

@@ -1,7 +1,7 @@
 apiVersion: v2.edp.epam.com/v1alpha1
 kind: PerfDataSourceSonar
 metadata:
-  name: with1-sonar
+  name: fake-sonar
 spec:
   name: stub-name
   type: Sonar

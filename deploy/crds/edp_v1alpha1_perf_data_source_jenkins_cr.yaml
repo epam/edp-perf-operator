@@ -1,7 +1,7 @@
 apiVersion: v2.edp.epam.com/v1alpha1
 kind: PerfDataSourceJenkins
 metadata:
-  name: with1-jenkins
+  name: fake-jenkins
 spec:
   name: stub-name
   type: Jenkins

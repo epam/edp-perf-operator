@@ -34,6 +34,18 @@ type DataSourceSonarConfig struct {
 	Password    string   `json:"password"`
 }
 
+type DataSourceGitlabConfig struct {
+	Repositories   []string `json:"repositories"`
+	Url            string   `json:"url"`
+	InstanceId     string   `json:"instanceId"`
+	WithMembership bool     `json:"withMembership"`
+	AllPublic      bool     `json:"allPublic"`
+	AllBranches    bool     `json:"allBranches"`
+	Branches       []string `json:"branches"`
+	Username       string   `json:"username"`
+	Password       string   `json:"password"`
+}
+
 type DataSourceConfigDto struct {
 	Type       string
 	ApiUrl     string
@@ -42,7 +54,16 @@ type DataSourceConfigDto struct {
 	Parameters []string
 }
 
-func GetSonarDsCreateCommand(ds *v1alpha1.PerfDataSourceSonar, username string, password string) DataSourceCommand {
+type DataSourceGitLabConfigDto struct {
+	Type         string
+	ApiUrl       string
+	Username     string
+	Password     string
+	Repositories []string
+	Branches     []string
+}
+
+func GetSonarDsCreateCommand(ds *v1alpha1.PerfDataSourceSonar, username, password string) DataSourceCommand {
 	return DataSourceCommand{
 		Name: ds.Spec.Name,
 		Type: DataSourceType(strings.ToUpper(ds.Spec.Type)),
@@ -69,7 +90,7 @@ func GetSonarDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) Da
 	}
 }
 
-func GetJenkinsDsCreateCommand(ds *v1alpha1.PerfDataSourceJenkins, username string, password string) DataSourceCommand {
+func GetJenkinsDsCreateCommand(ds *v1alpha1.PerfDataSourceJenkins, username, password string) DataSourceCommand {
 	return DataSourceCommand{
 		Name: ds.Spec.Name,
 		Type: DataSourceType(strings.ToUpper(ds.Spec.Type)),
@@ -92,6 +113,43 @@ func GetJenkinsDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) 
 			Url:      conf.ApiUrl,
 			Username: conf.Username,
 			Password: conf.Password,
+		},
+	}
+}
+
+func GetGitLabDsCreateCommand(ds *v1alpha1.PerfDataSourceGitLab, username, password string) DataSourceCommand {
+	return DataSourceCommand{
+		Name: ds.Spec.Name,
+		Type: DataSourceType(strings.ToUpper(ds.Spec.Type)),
+		Config: DataSourceGitlabConfig{
+			Repositories:   ds.Spec.Config.Repositories,
+			Url:            ds.Spec.Config.Url,
+			InstanceId:     ds.Spec.Config.Url,
+			WithMembership: false,
+			AllPublic:      false,
+			AllBranches:    false,
+			Branches:       ds.Spec.Config.Branches,
+			Username:       username,
+			Password:       password,
+		},
+	}
+}
+
+func GetGitLabDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceGitLabConfigDto) DataSourceCommand {
+	return DataSourceCommand{
+		Id:   dsReq.Id,
+		Name: dsReq.Name,
+		Type: DataSourceType(strings.ToUpper(dsReq.Type)),
+		Config: DataSourceGitlabConfig{
+			Repositories:   append(common.ConvertToStringArray(dsReq.Config["repositories"]), conf.Repositories...),
+			Branches:       append(common.ConvertToStringArray(dsReq.Config["branches"]), conf.Branches...),
+			Url:            conf.ApiUrl,
+			InstanceId:     conf.ApiUrl,
+			WithMembership: false,
+			AllPublic:      false,
+			AllBranches:    false,
+			Username:       conf.Username,
+			Password:       conf.Password,
 		},
 	}
 }
