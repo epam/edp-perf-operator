@@ -20,4 +20,3 @@ If connection is not successful, the loop ends up with an error.
 ### Related Articles
 
 * [PERF Data Source Controller](../documentation/perf_data_source_controller.md)
-* [PERF Integration](../documentation/perf_integration.md)

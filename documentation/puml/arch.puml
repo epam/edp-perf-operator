@@ -33,7 +33,7 @@ package perf-operator {
         String password
     }
 
-    class PerfDataSource {
+    class PerfDataSourceJenkins {
         -- spec --
         String name
         String type
@@ -43,13 +43,44 @@ package perf-operator {
         String status
     }
 
-    PerfDataSource "1" *-l- "1" DataSourceConfig : internal structure
-    class DataSourceConfig {
+    class PerfDataSourceSonar {
+        -- spec --
+        String name
+        String type
+        DataSourceConfig config
+        String perfServerName
+        -- status --
+        String status
+    }
+
+    class PerfDataSourceGitLab {
+        -- spec --
+        String name
+        String type
+        DataSourceConfig config
+        String perfServerName
+        -- status --
+        String status
+    }
+
+    PerfDataSourceJenkins "1" *-l- "1" DataSourceJenkinsConfig : internal structure
+    class DataSourceJenkinsConfig {
       []String jobNames
+      String url
+    }
+
+    PerfDataSourceSonar "1" *-l- "1" DataSourceSonarConfig : internal structure
+    class DataSourceSonarConfig {
       []String projectKeys
       String url
     }
 
+    PerfDataSourceGitLab "1" *-l- "1" DataSourceGitLabConfig : internal structure
+    class DataSourceGitLabConfig {
+      []String repositories
+      []String branches
+      String url
+    }
 }
 
 EdpComponent <-- PerfServer : creates, owns

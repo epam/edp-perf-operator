@@ -51,7 +51,61 @@ In order to install the PERF Operator, follow the steps below:
     
     **IMPORTANT**: Pay attention that at this point, the PERF integration works only on the top of Luminate service so it is required to create the Luminate secret.
     
-4. Deploy operator:
+4. Create config map with luminate data:
+
+    4.1 OpenShift:
+    ```bash
+    oc -n <edp_cicd_project> create configmap luminatesec-conf --from-literal=apiUrl=<api_url_to_get_luminate_token> --from-literal=credentialName=<perf.luminate.credentialName>
+    ```
+
+    4.2 Kubernetes: 
+    ```bash
+    kubectl -n <edp_cicd_project> create configmap luminatesec-conf --from-literal=apiUrl=<api_url_to_get_luminate_token> --from-literal=credentialName=<perf.luminate.credentialName>
+    ```
+    
+5. Create PerfServer CR:
+
+    ```bash
+    apiVersion: v2.edp.epam.com/v1alpha1
+    kind: PerfServer
+    metadata:
+      name: <perf_cr_name>
+      namespace: <namespace>
+    spec:
+      apiUrl: '<perf.apiUrl>'
+      credentialName: '<perf.credentialName>'
+      projectName: '<perf.projectName>'
+      rootUrl: '<perf.rootUrl>'
+    ```
+    
+    >_**NOTE**: As soon as the connection is established, the following information will be displayed in the status parameter:_
+    >```bash
+    >status:
+    >  available: true
+    >detailed_message: connected
+    >```
+    
+6. Create secrets with administrative rights to integrate the PERF data source with services (_e.g. Jenkins, Sonar, GitLab_):
+
+    6.1 OpenShift:
+    ```bash
+    oc -n <edp_cicd_project> create secret generic gitlab-admin-password --from-literal=username=<username_to_gitlab> --from-literal=password=<password_to_gitlab>
+   
+    oc -n <edp_cicd_project> create secret generic jenkins-admin-token --from-literal=username=<username_to_jenkins> --from-literal=password=<password_to_jenkins>
+   
+    oc -n <edp_cicd_project> create secret generic sonar-admin-password --from-literal=username=<username_to_sonar> --from-literal=password=<password_to_sonar>
+    ```
+
+    6.2 Kubernetes: 
+    ```bash
+    kubectl -n <edp_cicd_project> create secret generic gitlab-admin-password --from-literal=username=<username_to_gitlab> --from-literal=password=<password_to_gitlab>
+       
+    kubectl -n <edp_cicd_project> create secret generic jenkins-admin-token --from-literal=username=<username_to_jenkins> --from-literal=password=<password_to_jenkins>
+   
+    kubectl -n <edp_cicd_project> create secret generic sonar-admin-password --from-literal=username=<username_to_sonar> --from-literal=password=<password_to_sonar>
+    ```
+
+7. Deploy operator:
   
      Full available chart parameters list:
      
@@ -72,7 +126,7 @@ In order to install the PERF Operator, follow the steps below:
      - perf.luminate.credentialName                  # Name of a secret with Luminate credentials;
    ```
    
-5. Install operator in the <edp_cicd_project> namespace with the helm command; find below the installation command example:
+8. Install operator in the <edp_cicd_project> namespace with the helm command; find below the installation command example:
     ```bash
         helm install perf-operator epamedp/perf-operator --version <chart_version> --namespace <edp_cicd_project> \
         --set name=perf-operator \
@@ -88,8 +142,7 @@ In order to install the PERF Operator, follow the steps below:
         --set perf.luminate.apiUrl=<api_url> \
         --set perf.luminate.credentialName=<credential_name> \
     ```
-6. Check the <edp_cicd_project> namespace that should contain operator deployment with your operator in a running status.
-
+9. Check the <edp_cicd_project> namespace that should contain operator deployment with your operator in a running status.
 
 ## Local Development
 
@@ -99,5 +152,4 @@ In order to develop the operator, first set up a local environment. For details,
 
 * [Architecture Scheme of PERF Operator](documentation/arch.md)
 * [PERF Data Source Controller](documentation/perf_data_source_controller.md)
-* [PERF Integration](documentation/perf_integration.md)
 * [PERF Server Controller](documentation/perf_server_controller.md)
