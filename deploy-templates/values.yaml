@@ -7,6 +7,14 @@ image:
   name: epamedp/perf-operator
   version: v2.6.0
 
+resources:
+  limits:
+    cpu: 200m
+    memory: 192Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
 perf:
   integration: true
   name: "epam-perf"
