@@ -5,7 +5,8 @@ global:
 name: perf-operator
 image:
   name: epamedp/perf-operator
-  version: v2.6.0
+  # if not defined then .Chart.AppVersion is used
+  version:
 
 resources:
   limits:
