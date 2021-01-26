@@ -3,6 +3,10 @@ global:
   platform: "openshift"
 
 name: perf-operator
+annotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
 image:
   name: epamedp/perf-operator
   # if not defined then .Chart.AppVersion is used

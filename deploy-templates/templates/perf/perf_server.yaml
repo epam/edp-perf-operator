@@ -2,6 +2,8 @@
 apiVersion: v2.edp.epam.com/v1alpha1
 kind: PerfServer
 metadata:
+  labels:
+    {{- include "perf-operator.labels" . | nindent 4 }}
   name: {{.Values.perf.name}}
 spec:
   apiUrl: {{.Values.perf.apiUrl}}

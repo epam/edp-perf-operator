@@ -6,6 +6,8 @@ data:
   credentialName: {{ .Values.perf.luminate.credentialName }}
 kind: ConfigMap
 metadata:
+  labels:
+    {{- include "perf-operator.labels" . | nindent 4 }}
   name: luminatesec-conf
   {{end}}
 {{end}}
