@@ -1,9 +1,9 @@
 package chain
 
 import (
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfserver/chain/handler"
+	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfserver/chain/handler"
 	"github.com/pkg/errors"
 )
 

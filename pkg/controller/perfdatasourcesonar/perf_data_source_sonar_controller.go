@@ -2,75 +2,42 @@ package perfdatasourcesonar
 
 import (
 	"context"
-	v1alpha12 "github.com/epmd-edp/codebase-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasourcesonar/chain"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcesonar/chain"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
+	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"reflect"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 	"time"
 )
 
-var (
-	log = logf.Log.WithName("controller_perf_data_source_sonar")
-)
-
-func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+type ReconcilePerfDataSourceSonar struct {
+	Client client.Client
+	Scheme *runtime.Scheme
+	Log    logr.Logger
 }
 
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	scheme := mgr.GetScheme()
-	addKnownTypes(scheme)
-	return &ReconcilePerfDataSourceSonar{
-		client: mgr.GetClient(),
-		scheme: scheme,
-	}
-}
-
-func addKnownTypes(scheme *runtime.Scheme) {
-	schemeGroupVersion := schema.GroupVersion{Group: "v2.edp.epam.com", Version: "v1alpha1"}
-	scheme.AddKnownTypes(schemeGroupVersion,
-		&v1alpha12.Codebase{},
-		&v1alpha12.CodebaseList{},
-	)
-	metav1.AddToGroupVersion(scheme, schemeGroupVersion)
-}
-
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	c, err := controller.New("perfdatasourcesonar-controller", mgr, controller.Options{Reconciler: r})
-	if err != nil {
-		return err
-	}
-
+func (r *ReconcilePerfDataSourceSonar) SetupWithManager(mgr ctrl.Manager) error {
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			oldPk := e.ObjectOld.(*v1alpha1.PerfDataSourceSonar).Spec.Config.ProjectKeys
-			newPk := e.ObjectNew.(*v1alpha1.PerfDataSourceSonar).Spec.Config.ProjectKeys
+			oldPk := e.ObjectOld.(*perfApi.PerfDataSourceSonar).Spec.Config.ProjectKeys
+			newPk := e.ObjectNew.(*perfApi.PerfDataSourceSonar).Spec.Config.ProjectKeys
 			return dataSourceUpdated(oldPk, newPk)
 		},
 	}
-
-	if err = c.Watch(&source.Kind{Type: &v1alpha1.PerfDataSourceSonar{}}, &handler.EnqueueRequestForObject{}, p); err != nil {
-		return err
-	}
-
-	return nil
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&perfApi.PerfDataSourceSonar{}, builder.WithPredicates(p)).
+		Complete(r)
 }
 
 func dataSourceUpdated(old, new []string) bool {
@@ -79,27 +46,20 @@ func dataSourceUpdated(old, new []string) bool {
 	return !reflect.DeepEqual(old, new)
 }
 
-var _ reconcile.Reconciler = &ReconcilePerfDataSourceSonar{}
+func (r *ReconcilePerfDataSourceSonar) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+	log := r.Log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
+	log.V(2).Info("Reconciling PerfDataSourceSonar")
 
-type ReconcilePerfDataSourceSonar struct {
-	client client.Client
-	scheme *runtime.Scheme
-}
-
-func (r *ReconcilePerfDataSourceSonar) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	rl := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	rl.V(2).Info("Reconciling PerfDataSourceSonar")
-
-	i := &v1alpha1.PerfDataSourceSonar{}
-	if err := r.client.Get(context.TODO(), request.NamespacedName, i); err != nil {
+	i := &perfApi.PerfDataSourceSonar{}
+	if err := r.Client.Get(ctx, request.NamespacedName, i); err != nil {
 		if k8serrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
 	}
-	defer r.updateStatus(i)
+	defer r.updateStatus(ctx, i)
 
-	ps, err := cluster.GetPerfServerCr(r.client, i.Spec.PerfServerName, i.Namespace)
+	ps, err := cluster.GetPerfServerCr(r.Client, i.Spec.PerfServerName, i.Namespace)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrapf(err, "couldn't get %v PerfServer from cluster", i.Spec.PerfServerName)
 	}
@@ -114,22 +74,22 @@ func (r *ReconcilePerfDataSourceSonar) Reconcile(request reconcile.Request) (rec
 		return reconcile.Result{}, err
 	}
 
-	if err := chain.CreateDefChain(r.client, r.scheme, pc).ServeRequest(i); err != nil {
+	if err := chain.CreateDefChain(r.Client, r.Scheme, pc).ServeRequest(i); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	rl.Info("Reconciling PerfDataSourceSonar has been finished")
+	log.Info("Reconciling PerfDataSourceSonar has been finished")
 	return reconcile.Result{}, nil
 }
 
-func (r ReconcilePerfDataSourceSonar) updateStatus(ds *v1alpha1.PerfDataSourceSonar) {
-	if err := r.client.Status().Update(context.TODO(), ds); err != nil {
-		_ = r.client.Update(context.TODO(), ds)
+func (r ReconcilePerfDataSourceSonar) updateStatus(ctx context.Context, ds *perfApi.PerfDataSourceSonar) {
+	if err := r.Client.Status().Update(ctx, ds); err != nil {
+		_ = r.Client.Update(ctx, ds)
 	}
 }
 
 func (r ReconcilePerfDataSourceSonar) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {
-	credentials, err := perf.GetPerfCredentials(r.client, secretName, namespace)
+	credentials, err := perf.GetPerfCredentials(r.Client, secretName, namespace)
 	if err != nil {
 		return nil, err
 	}

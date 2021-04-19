@@ -1,14 +1,14 @@
 package chain
 
 import (
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasourcesonar/chain/handler"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/command"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/datasource"
+	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcesonar/chain/handler"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/datasource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 

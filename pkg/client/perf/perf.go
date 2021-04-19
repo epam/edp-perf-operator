@@ -1,14 +1,14 @@
 package perf
 
 import (
-	"github.com/epmd-edp/perf-operator/v2/pkg/client/luminate"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/command"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/luminate"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
 	"github.com/pkg/errors"
 	"gopkg.in/resty.v1"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"strconv"
 	"strings"
 )
@@ -27,7 +27,7 @@ type PerfClientAdapter struct {
 	client resty.Client
 }
 
-var log = logf.Log.WithName("perf_client")
+var log = ctrl.Log.WithName("perf_client")
 
 const luminatesecConfigMapName = "luminatesec-conf"
 

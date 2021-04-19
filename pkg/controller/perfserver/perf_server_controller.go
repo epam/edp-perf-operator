@@ -2,105 +2,80 @@ package perfserver
 
 import (
 	"context"
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfserver/chain"
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfserver/chain"
+	"github.com/go-logr/logr"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 	"time"
 )
 
-func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+type ReconcilePerfServer struct {
+	Client client.Client
+	Scheme *runtime.Scheme
+	Log    logr.Logger
 }
 
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcilePerfServer{
-		client: mgr.GetClient(),
-		scheme: mgr.GetScheme(),
-	}
-}
-
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	c, err := controller.New("perfserver-controller", mgr, controller.Options{Reconciler: r})
-	if err != nil {
-		return err
-	}
-
+func (r *ReconcilePerfServer) SetupWithManager(mgr ctrl.Manager) error {
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			oldObject := e.ObjectOld.(*v1alpha1.PerfServer)
-			newObject := e.ObjectNew.(*v1alpha1.PerfServer)
+			oldObject := e.ObjectOld.(*perfApi.PerfServer)
+			newObject := e.ObjectNew.(*perfApi.PerfServer)
 			if oldObject.Spec != newObject.Spec {
 				return true
 			}
 			return false
 		},
 	}
-
-	if err = c.Watch(&source.Kind{Type: &v1alpha1.PerfServer{}}, &handler.EnqueueRequestForObject{}, p); err != nil {
-		return err
-	}
-
-	return nil
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&perfApi.PerfServer{}, builder.WithPredicates(p)).
+		Complete(r)
 }
 
-var (
-	_   reconcile.Reconciler = &ReconcilePerfServer{}
-	log                      = logf.Log.WithName("controller_perf_server")
-)
+func (r *ReconcilePerfServer) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+	log := r.Log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
+	log.Info("Reconciling PerfServer")
 
-type ReconcilePerfServer struct {
-	client client.Client
-	scheme *runtime.Scheme
-}
-
-func (r *ReconcilePerfServer) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	rl := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	rl.Info("Reconciling PerfServer")
-
-	i := &v1alpha1.PerfServer{}
-	if err := r.client.Get(context.TODO(), request.NamespacedName, i); err != nil {
+	i := &perfApi.PerfServer{}
+	if err := r.Client.Get(ctx, request.NamespacedName, i); err != nil {
 		if k8serrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
 	}
-	defer r.updateStatus(i)
+	defer r.updateStatus(ctx, i)
 
 	pc, err := r.newPerfRestClient(i.Spec.ApiUrl, i.Spec.CredentialName, i.Namespace)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	if err := chain.CreateDefChain(r.client, r.scheme, pc).ServeRequest(i); err != nil {
+	if err := chain.CreateDefChain(r.Client, r.Scheme, pc).ServeRequest(i); err != nil {
 		i.Status.DetailedMessage = err.Error()
 		log.Error(err, "couldn't handle PERF server CR")
 		return reconcile.Result{RequeueAfter: 5 * time.Minute}, nil
 	}
 
-	rl.Info("Reconciling PerfServer has been finished")
+	log.Info("Reconciling PerfServer has been finished")
 	return reconcile.Result{}, nil
 }
 
-func (r ReconcilePerfServer) updateStatus(server *v1alpha1.PerfServer) {
+func (r ReconcilePerfServer) updateStatus(ctx context.Context, server *perfApi.PerfServer) {
 	server.Status.LastTimeUpdated = time.Now()
-	if err := r.client.Status().Update(context.TODO(), server); err != nil {
-		_ = r.client.Update(context.TODO(), server)
+	if err := r.Client.Status().Update(ctx, server); err != nil {
+		_ = r.Client.Update(ctx, server)
 	}
 }
 
 func (r ReconcilePerfServer) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {
-	credentials, err := perf.GetPerfCredentials(r.client, secretName, namespace)
+	credentials, err := perf.GetPerfCredentials(r.Client, secretName, namespace)
 	if err != nil {
 		return nil, err
 	}

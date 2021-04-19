@@ -2,10 +2,10 @@ package chain
 
 import (
 	"errors"
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf/mock"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/command"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
+	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/stretchr/testify/assert"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
