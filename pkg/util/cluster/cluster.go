@@ -2,13 +2,22 @@ package cluster
 
 import (
 	"context"
-	codebaseApi "github.com/epmd-edp/codebase-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"fmt"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
+)
+
+const (
+	watchNamespaceEnvVar   = "WATCH_NAMESPACE"
+	debugModeEnvVar        = "DEBUG_MODE"
+	inClusterNamespacePath = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
 func GetSecret(client client.Client, name, namespace string) (*coreV1.Secret, error) {
@@ -67,4 +76,36 @@ func GetCodebase(client client.Client, name, namespace string) (*codebaseApi.Cod
 		return nil, err
 	}
 	return i, nil
+}
+
+// GetWatchNamespace returns the namespace the operator should be watching for changes
+func GetWatchNamespace() (string, error) {
+	ns, found := os.LookupEnv(watchNamespaceEnvVar)
+	if !found {
+		return "", fmt.Errorf("%s must be set", watchNamespaceEnvVar)
+	}
+	return ns, nil
+}
+
+// GetDebugMode returns the debug mode value
+func GetDebugMode() (bool, error) {
+	mode, found := os.LookupEnv(debugModeEnvVar)
+	if !found {
+		return false, nil
+	}
+
+	b, err := strconv.ParseBool(mode)
+	if err != nil {
+		return false, err
+	}
+	return b, nil
+}
+
+// Check whether the operator is running in cluster or locally
+func RunningInCluster() bool {
+	_, err := os.Stat(inClusterNamespacePath)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
 }

@@ -1,8 +1,8 @@
 package mock
 
 import (
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/command"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/stretchr/testify/mock"
 )
 

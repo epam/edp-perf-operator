@@ -1,9 +1,9 @@
 package command
 
 import (
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
+	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 	"strings"
 )
 

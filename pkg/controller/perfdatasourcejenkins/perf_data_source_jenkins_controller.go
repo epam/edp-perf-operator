@@ -2,75 +2,52 @@ package perfdatasourcejenkins
 
 import (
 	"context"
-	v1alpha12 "github.com/epmd-edp/codebase-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasourcejenkins/chain"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcejenkins/chain"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
+	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"reflect"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 	"time"
 )
 
-var (
-	log = logf.Log.WithName("controller_perf_data_source_jenkins")
-)
+var _ reconcile.Reconciler = &ReconcilePerfDataSourceJenkins{}
 
-func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
-}
-
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	scheme := mgr.GetScheme()
-	addKnownTypes(scheme)
+func NewReconcilePerfDataSourceJenkins(client client.Client, scheme *runtime.Scheme, log logr.Logger) *ReconcilePerfDataSourceJenkins {
 	return &ReconcilePerfDataSourceJenkins{
-		client: mgr.GetClient(),
+		client: client,
 		scheme: scheme,
+		log:    log.WithName("perf-data-source-jenkins"),
 	}
 }
 
-func addKnownTypes(scheme *runtime.Scheme) {
-	schemeGroupVersion := schema.GroupVersion{Group: "v2.edp.epam.com", Version: "v1alpha1"}
-	scheme.AddKnownTypes(schemeGroupVersion,
-		&v1alpha12.Codebase{},
-		&v1alpha12.CodebaseList{},
-	)
-	metav1.AddToGroupVersion(scheme, schemeGroupVersion)
+type ReconcilePerfDataSourceJenkins struct {
+	client client.Client
+	scheme *runtime.Scheme
+	log    logr.Logger
 }
 
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	c, err := controller.New("perfdatasourcejenkins-controller", mgr, controller.Options{Reconciler: r})
-	if err != nil {
-		return err
-	}
-
+func (r *ReconcilePerfDataSourceJenkins) SetupWithManager(mgr ctrl.Manager) error {
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			oldJn := e.ObjectOld.(*v1alpha1.PerfDataSourceJenkins).Spec.Config.JobNames
-			newJn := e.ObjectNew.(*v1alpha1.PerfDataSourceJenkins).Spec.Config.JobNames
+			oldJn := e.ObjectOld.(*perfApi.PerfDataSourceJenkins).Spec.Config.JobNames
+			newJn := e.ObjectNew.(*perfApi.PerfDataSourceJenkins).Spec.Config.JobNames
 			return dataSourceUpdated(oldJn, newJn)
 		},
 	}
-
-	if err = c.Watch(&source.Kind{Type: &v1alpha1.PerfDataSourceJenkins{}}, &handler.EnqueueRequestForObject{}, p); err != nil {
-		return err
-	}
-
-	return nil
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&perfApi.PerfDataSourceJenkins{}, builder.WithPredicates(p)).
+		Complete(r)
 }
 
 func dataSourceUpdated(old, new []string) bool {
@@ -79,25 +56,18 @@ func dataSourceUpdated(old, new []string) bool {
 	return !reflect.DeepEqual(old, new)
 }
 
-var _ reconcile.Reconciler = &ReconcilePerfDataSourceJenkins{}
+func (r *ReconcilePerfDataSourceJenkins) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+	log := r.log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
+	log.V(2).Info("Reconciling PerfDataSourceJenkins")
 
-type ReconcilePerfDataSourceJenkins struct {
-	client client.Client
-	scheme *runtime.Scheme
-}
-
-func (r *ReconcilePerfDataSourceJenkins) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	rl := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	rl.V(2).Info("Reconciling PerfDataSourceJenkins")
-
-	i := &v1alpha1.PerfDataSourceJenkins{}
-	if err := r.client.Get(context.TODO(), request.NamespacedName, i); err != nil {
+	i := &perfApi.PerfDataSourceJenkins{}
+	if err := r.client.Get(ctx, request.NamespacedName, i); err != nil {
 		if k8serrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
 	}
-	defer r.updateStatus(i)
+	defer r.updateStatus(ctx, i)
 
 	ps, err := cluster.GetPerfServerCr(r.client, i.Spec.PerfServerName, i.Namespace)
 	if err != nil {
@@ -118,13 +88,13 @@ func (r *ReconcilePerfDataSourceJenkins) Reconcile(request reconcile.Request) (r
 		return reconcile.Result{}, err
 	}
 
-	rl.Info("Reconciling PerfDataSourceJenkins has been finished")
+	log.Info("Reconciling PerfDataSourceJenkins has been finished")
 	return reconcile.Result{}, nil
 }
 
-func (r ReconcilePerfDataSourceJenkins) updateStatus(ds *v1alpha1.PerfDataSourceJenkins) {
-	if err := r.client.Status().Update(context.TODO(), ds); err != nil {
-		_ = r.client.Update(context.TODO(), ds)
+func (r ReconcilePerfDataSourceJenkins) updateStatus(ctx context.Context, ds *perfApi.PerfDataSourceJenkins) {
+	if err := r.client.Status().Update(ctx, ds); err != nil {
+		_ = r.client.Update(ctx, ds)
 	}
 }
 
