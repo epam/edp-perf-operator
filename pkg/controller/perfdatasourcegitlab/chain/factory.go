@@ -1,15 +1,15 @@
 package chain
 
 import (
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf"
-	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasourcegitlab/chain/handler"
+	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcegitlab/chain/handler"
 	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
-var log = logf.Log.WithName("perf_data_source_gitlab_handler")
+var log = ctrl.Log.WithName("perf_data_source_gitlab_handler")
 
 func CreateDefChain(client client.Client, scheme *runtime.Scheme, perfClient perf.PerfClient) handler.PerfDataSourceGitLabHandler {
 	return PutOwnerReference{

@@ -2,10 +2,10 @@ package luminate
 
 import (
 	"encoding/json"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/common"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 	"github.com/pkg/errors"
 	"gopkg.in/resty.v1"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 type LuminateClient interface {
@@ -16,7 +16,7 @@ type LuminateClientAdapter struct {
 	client resty.Client
 }
 
-var log = logf.Log.WithName("luminate_client")
+var log = ctrl.Log.WithName("luminate_client")
 
 func NewLuminateRestClient(url string) LuminateClientAdapter {
 	cl := resty.New().

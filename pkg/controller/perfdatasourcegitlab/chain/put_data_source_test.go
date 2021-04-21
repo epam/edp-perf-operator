@@ -2,14 +2,17 @@ package chain
 
 import (
 	"errors"
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/client/perf/mock"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/command"
-	"github.com/epmd-edp/perf-operator/v2/pkg/model/dto"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/stretchr/testify/assert"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"testing"
@@ -19,6 +22,11 @@ const (
 	gitlabDsType     = "GITLAB"
 	fakeCodebaseName = "stub-val"
 )
+
+func init() {
+	utilruntime.Must(perfApi.AddToScheme(scheme.Scheme))
+	utilruntime.Must(codebaseApi.AddToScheme(scheme.Scheme))
+}
 
 func TestPutDataSource_ShouldUpdateGitLabDataSourceWithoutActivating(t *testing.T) {
 	pds := &v1alpha1.PerfDataSourceGitLab{
@@ -32,7 +40,8 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithoutActivating(t *testing.
 			},
 		},
 		Spec: v1alpha1.PerfDataSourceGitLabSpec{
-			Type: gitlabDsType,
+			PerfServerName: fakeName,
+			Type:           gitlabDsType,
 			Config: v1alpha1.DataSourceGitLabConfig{
 				Repositories: []string{"repo1"},
 				Branches:     []string{"master"},
@@ -62,16 +71,9 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithoutActivating(t *testing.
 		},
 	}
 
-	objs := []runtime.Object{
-		pds, ps, sec,
-	}
-
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, pds, ps)
-
 	mPerfCl := new(mock.MockPerfClient)
 	ch := PutDataSource{
-		client:     fake.NewFakeClient(objs...),
+		client:     fake.NewFakeClient(pds, ps, sec),
 		perfClient: mPerfCl,
 	}
 
@@ -116,7 +118,8 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithActivating(t *testing.T) 
 			},
 		},
 		Spec: v1alpha1.PerfDataSourceGitLabSpec{
-			Type: gitlabDsType,
+			PerfServerName: fakeName,
+			Type:           gitlabDsType,
 			Config: v1alpha1.DataSourceGitLabConfig{
 				Repositories: []string{"repo1"},
 				Branches:     []string{"master"},
@@ -146,16 +149,14 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithActivating(t *testing.T) 
 		},
 	}
 
-	objs := []runtime.Object{
-		pds, ps, sec,
-	}
-
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, pds, ps)
+	cl := fake.NewClientBuilder().
+		WithScheme(scheme.Scheme).
+		WithObjects(pds, ps, sec).
+		Build()
 
 	mPerfCl := new(mock.MockPerfClient)
 	ch := PutDataSource{
-		client:     fake.NewFakeClient(objs...),
+		client:     cl,
 		perfClient: mPerfCl,
 	}
 
@@ -202,7 +203,8 @@ func TestPutDataSource_ShouldCreateGitLabDataSource(t *testing.T) {
 			},
 		},
 		Spec: v1alpha1.PerfDataSourceGitLabSpec{
-			Type: gitlabDsType,
+			PerfServerName: fakeName,
+			Type:           gitlabDsType,
 			Config: v1alpha1.DataSourceGitLabConfig{
 				Repositories: []string{"repo1"},
 				Branches:     []string{"master"},
@@ -232,16 +234,14 @@ func TestPutDataSource_ShouldCreateGitLabDataSource(t *testing.T) {
 		},
 	}
 
-	objs := []runtime.Object{
-		pds, ps, sec,
-	}
-
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, pds, ps)
+	cl := fake.NewClientBuilder().
+		WithScheme(scheme.Scheme).
+		WithObjects(pds, ps, sec).
+		Build()
 
 	mPerfCl := new(mock.MockPerfClient)
 	ch := PutDataSource{
-		client:     fake.NewFakeClient(objs...),
+		client:     cl,
 		perfClient: mPerfCl,
 	}
 
@@ -277,9 +277,6 @@ func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
 	objs := []runtime.Object{
 		ps,
 	}
-
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, ps)
 
 	mPerfCl := new(mock.MockPerfClient)
 	ch := PutDataSource{
@@ -351,9 +348,6 @@ func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
 		pds, ps, sec,
 	}
 
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, pds, ps)
-
 	mPerfCl := new(mock.MockPerfClient)
 	ch := PutDataSource{
 		client:     fake.NewFakeClient(objs...),
@@ -403,7 +397,8 @@ func TestPutDataSource_ShouldNotUpdateDataSourceBecauseOfMissingNewParameters(t 
 			},
 		},
 		Spec: v1alpha1.PerfDataSourceGitLabSpec{
-			Type: gitlabDsType,
+			PerfServerName: fakeName,
+			Type:           gitlabDsType,
 			Config: v1alpha1.DataSourceGitLabConfig{
 				Repositories: []string{"repo1"},
 				Branches:     []string{"master"},
@@ -433,16 +428,14 @@ func TestPutDataSource_ShouldNotUpdateDataSourceBecauseOfMissingNewParameters(t 
 		},
 	}
 
-	objs := []runtime.Object{
-		pds, ps, sec,
-	}
-
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, pds, ps)
+	cl := fake.NewClientBuilder().
+		WithScheme(scheme.Scheme).
+		WithObjects(pds, ps, sec).
+		Build()
 
 	mPerfCl := new(mock.MockPerfClient)
 	ch := PutDataSource{
-		client:     fake.NewFakeClient(objs...),
+		client:     cl,
 		perfClient: mPerfCl,
 	}
 

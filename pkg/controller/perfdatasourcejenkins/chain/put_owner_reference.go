@@ -2,10 +2,10 @@ package chain
 
 import (
 	"context"
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/controller/perfdatasourcejenkins/chain/handler"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/cluster"
-	"github.com/epmd-edp/perf-operator/v2/pkg/util/consts"
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcejenkins/chain/handler"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/consts"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -18,7 +18,7 @@ type PutOwnerReference struct {
 	next   handler.PerfDataSourceJenkinsHandler
 }
 
-func (h PutOwnerReference) ServeRequest(ds *v1alpha1.PerfDataSourceJenkins) error {
+func (h PutOwnerReference) ServeRequest(ds *perfApi.PerfDataSourceJenkins) error {
 	log.Info("put owner reference for Jenkins data source", "name", ds.Name)
 	if err := h.setPerfOwnerRef(ds); err != nil {
 		return err
@@ -27,7 +27,7 @@ func (h PutOwnerReference) ServeRequest(ds *v1alpha1.PerfDataSourceJenkins) erro
 	return nextServeOrNil(h.next, ds)
 }
 
-func (h PutOwnerReference) setPerfOwnerRef(ds *v1alpha1.PerfDataSourceJenkins) error {
+func (h PutOwnerReference) setPerfOwnerRef(ds *perfApi.PerfDataSourceJenkins) error {
 	log.Info("try to set owner ref for perf Jenkins data source", "name", ds.Name)
 	if ow := cluster.GetOwnerReference(consts.CodebaseKind, ds.GetOwnerReferences()); ow != nil {
 		log.Info("PerfDataSourceJenkins already has owner ref",

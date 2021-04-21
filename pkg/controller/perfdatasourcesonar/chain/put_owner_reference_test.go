@@ -1,11 +1,10 @@
 package chain
 
 import (
-	v1alpha12 "github.com/epmd-edp/codebase-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epmd-edp/perf-operator/v2/pkg/apis/edp/v1alpha1"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"testing"
@@ -33,30 +32,30 @@ func TestPutOwnerReference_PerfDataSourceContainsPerfServerOwnerReference(t *tes
 func TestPutOwnerReference_ShouldSetOwnerReference(t *testing.T) {
 	pds := &v1alpha1.PerfDataSourceSonar{
 		ObjectMeta: v1.ObjectMeta{
+			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
 		Spec: v1alpha1.PerfDataSourceSonarSpec{
+			CodebaseName:   fakeName,
 			PerfServerName: fakeName,
 		},
 	}
 
-	c := &v1alpha12.Codebase{
+	c := &codebaseApi.Codebase{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
 	}
 
-	objs := []runtime.Object{
-		pds, c,
-	}
-
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, pds, c)
+	cl := fake.NewClientBuilder().
+		WithScheme(scheme.Scheme).
+		WithObjects(pds, c).
+		Build()
 
 	ch := PutOwnerReference{
-		scheme: s,
-		client: fake.NewFakeClient(objs...),
+		scheme: scheme.Scheme,
+		client: cl,
 	}
 	assert.NoError(t, ch.ServeRequest(pds))
 }
@@ -73,16 +72,9 @@ func TestPutOwnerReference_PerfServerShouldNotBeFound(t *testing.T) {
 
 	ps := &v1alpha1.PerfServer{}
 
-	objs := []runtime.Object{
-		pds, ps,
-	}
-
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, pds, ps)
-
 	ch := PutOwnerReference{
-		scheme: s,
-		client: fake.NewFakeClient(objs...),
+		scheme: scheme.Scheme,
+		client: fake.NewFakeClient(pds, ps),
 	}
 	assert.Error(t, ch.ServeRequest(pds))
 }
