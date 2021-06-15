@@ -10,7 +10,7 @@ replace (
 )
 
 require (
-	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20210426125026-571bd859bdf0
+	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20210611080055-9f3a3a271e99
 	github.com/epam/edp-component-operator v0.1.1-0.20210427065236-c7dce7f4ea2b
 	github.com/go-logr/logr v0.4.0
 	github.com/go-openapi/spec v0.19.5
