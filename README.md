@@ -14,7 +14,7 @@ _**NOTE:** Operator is platform-independent, that is why there is a unified inst
 ## Prerequisites
 1. Linux machine or Windows Subsystem for Linux instance with [Helm 3](https://helm.sh/docs/intro/install/) installed;
 2. Cluster admin access to the cluster;
-3. EDP project/namespace is deployed by following one of the instructions: [EDP Installation on OpenShift](https://github.com/epam/edp-install/blob/master/documentation/openshift_install_edp.md#edp-installation-on-openshift) or [EDP Installation on Kubernetes](https://github.com/epam/edp-install/blob/master/documentation/kubernetes_install_edp.md#edp-installation-on-kubernetes).
+3. EDP project/namespace is deployed by following the [EDP Install](https://epam.github.io/edp-install/operator-guide/install-edp/) instruction.
 
 ## Installation
 In order to install the PERF Operator, follow the steps below:
