@@ -11,6 +11,7 @@ image:
   name: epamedp/perf-operator
   # if not defined then .Chart.AppVersion is used
   version:
+imagePullPolicy: "IfNotPresent"
 
 resources:
   limits:
