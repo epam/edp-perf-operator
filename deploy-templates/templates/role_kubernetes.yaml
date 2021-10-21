@@ -28,6 +28,7 @@ rules:
       - perfdatasourcegitlabs
       - perfdatasourcegitlabs/finalizers
       - perfdatasourcegitlabs/status
+      - events
     verbs:
       - '*'
   - apiGroups:
