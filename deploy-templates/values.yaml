@@ -21,13 +21,13 @@ resources:
     memory: 64Mi
 
 perf:
-  integration: true
-  name: "epam-perf"
-  apiUrl: "https://perf.delivery.epam.com"
-  rootUrl: "https://perf.delivery.epam.com"
-  credentialName: "epam-perf-user"
-  projectName: "EPMD-EDP"
+  integration: false
+  name: "perf"
+  apiUrl: "https://perf.delivery.example.com"
+  rootUrl: "https://perf.delivery.example.com"
+  credentialName: "perf-user"
+  projectName: "PROJECT-NAME"
   luminate:
-    enabled: true
-    apiUrl: "https://api.epam.luminatesec.com"
+    enabled: false
+    apiUrl: "https://api.example.luminatesec.com"
     credentialName: "luminate-secret"
