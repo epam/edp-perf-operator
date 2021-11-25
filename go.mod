@@ -13,11 +13,12 @@ replace (
 
 require (
 	github.com/epam/edp-codebase-operator/v2 v2.3.0-95.0.20210719112602-046af47ad1c0
+	github.com/epam/edp-common v0.0.0-20211124100535-e54dcdf42879
 	github.com/epam/edp-component-operator v0.1.1-0.20210712140516-09b8bb3a4cff
 	github.com/go-logr/logr v0.4.0
 	github.com/go-openapi/spec v0.19.5
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	gopkg.in/resty.v1 v1.12.0
 	k8s.io/api v0.21.0-rc.0
 	k8s.io/apimachinery v0.21.0-rc.0
