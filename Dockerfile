@@ -5,7 +5,7 @@ ENV OPERATOR=/usr/local/bin/perf-operator \
     USER_NAME=perf-operator
 
 # install operator binary
-COPY go-binary ${OPERATOR}
+COPY ./dist/go-binary ${OPERATOR}
 
 COPY build/bin /usr/local/bin
 COPY build/configs /usr/local/configs
