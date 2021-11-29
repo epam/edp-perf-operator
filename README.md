@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/epam/edp-perf-operator/branch/master/graph/badge.svg?token=T30RCA4QFD)](https://codecov.io/gh/epam/edp-perf-operator)
+
 # PERF Operator
 
 | :heavy_exclamation_mark: Please refer to [EDP documentation](https://epam.github.io/edp-install/) to get the notion of the main concepts and guidelines. |
