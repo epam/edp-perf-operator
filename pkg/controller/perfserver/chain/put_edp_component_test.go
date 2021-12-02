@@ -13,8 +13,6 @@ import (
 
 const (
 	fakeNamespace = "fake-namespace"
-	dirPath       = "/usr/local/configs/img"
-	fileName      = "perf.svg"
 )
 
 func TestPutEdpComponent_EdpComponentAlreadyExists(t *testing.T) {
@@ -33,7 +31,7 @@ func TestPutEdpComponent_EdpComponentAlreadyExists(t *testing.T) {
 
 	ch := PutEdpComponent{
 		scheme: s,
-		client: fake.NewFakeClient(objs...),
+		client: fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
 	}
 
 	psr := &v1alpha1.PerfServer{
@@ -52,7 +50,7 @@ func TestPutEdpComponent_SchemeDoesntContainEdpComponent(t *testing.T) {
 
 	ch := PutEdpComponent{
 		scheme: s,
-		client: fake.NewFakeClient([]runtime.Object{}...),
+		client: fake.NewClientBuilder().WithRuntimeObjects([]runtime.Object{}...).Build(),
 	}
 
 	psr := &v1alpha1.PerfServer{
@@ -83,7 +81,7 @@ func TestPutEdpComponent_IconDoesntExist(t *testing.T) {
 
 	ch := PutEdpComponent{
 		scheme: s,
-		client: fake.NewFakeClient(objs...),
+		client: fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
 	}
 
 	assert.Error(t, ch.ServeRequest(psr))

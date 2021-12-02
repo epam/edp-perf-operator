@@ -19,8 +19,7 @@ import (
 )
 
 const (
-	gitlabDsType     = "GITLAB"
-	fakeCodebaseName = "stub-val"
+	gitlabDsType = "GITLAB"
 )
 
 func init() {
@@ -73,7 +72,7 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithoutActivating(t *testing.
 
 	mPerfCl := new(mock.MockPerfClient)
 	ch := PutDataSource{
-		client:     fake.NewFakeClient(pds, ps, sec),
+		client:     fake.NewClientBuilder().WithRuntimeObjects(pds, ps, sec).Build(),
 		perfClient: mPerfCl,
 	}
 
@@ -280,7 +279,7 @@ func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
 
 	mPerfCl := new(mock.MockPerfClient)
 	ch := PutDataSource{
-		client:     fake.NewFakeClient(objs...),
+		client:     fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
 		perfClient: mPerfCl,
 	}
 
@@ -350,7 +349,7 @@ func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
 
 	mPerfCl := new(mock.MockPerfClient)
 	ch := PutDataSource{
-		client:     fake.NewFakeClient(objs...),
+		client:     fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
 		perfClient: mPerfCl,
 	}
 

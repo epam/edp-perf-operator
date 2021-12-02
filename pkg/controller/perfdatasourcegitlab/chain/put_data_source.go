@@ -3,7 +3,6 @@ package chain
 import (
 	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
-	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcegitlab/chain/handler"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
@@ -13,7 +12,6 @@ import (
 )
 
 type PutDataSource struct {
-	next       handler.PerfDataSourceGitLabHandler
 	client     client.Client
 	perfClient perf.PerfClient
 }

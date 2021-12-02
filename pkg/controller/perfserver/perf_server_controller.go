@@ -36,10 +36,7 @@ func (r *ReconcilePerfServer) SetupWithManager(mgr ctrl.Manager) error {
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			oldObject := e.ObjectOld.(*perfApi.PerfServer)
 			newObject := e.ObjectNew.(*perfApi.PerfServer)
-			if oldObject.Spec != newObject.Spec {
-				return true
-			}
-			return false
+			return oldObject.Spec != newObject.Spec
 		},
 	}
 	return ctrl.NewControllerManagedBy(mgr).

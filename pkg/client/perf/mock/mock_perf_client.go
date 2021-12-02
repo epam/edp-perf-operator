@@ -16,6 +16,7 @@ func (m *MockPerfClient) Connected() (bool, error) {
 }
 
 func (m *MockPerfClient) GetProject(name string) (ds *dto.PerfProject, err error) {
+	// unimplemented method
 	panic("implement me")
 }
 
@@ -24,7 +25,7 @@ func (m *MockPerfClient) ProjectExists(name string) (bool, error) {
 	return args.Get(0).(bool), args.Error(1)
 }
 
-func (m MockPerfClient) GetProjectDataSource(projectName, dsType string) (*dto.DataSource, error) {
+func (m *MockPerfClient) GetProjectDataSource(projectName, dsType string) (*dto.DataSource, error) {
 	args := m.Called(projectName, dsType)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)

@@ -123,10 +123,11 @@ func (c PerfClientAdapter) GetProject(name string) (ds *dto.PerfProject, err err
 	)
 	findNode = func(projects []dto.PerfProject, name string) {
 		for _, child := range projects {
-			if strings.ToLower(child.Name) == strings.ToLower(name) {
+			if strings.EqualFold(child.Name, name) {
 				node = &child
 				break
 			}
+
 			findNode(child.Children, name)
 		}
 	}

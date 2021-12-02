@@ -23,7 +23,7 @@ func TestCheckConnectionToPerf_ShouldBeExecutedSuccessfully(t *testing.T) {
 
 	mPerfCl := new(mock.MockPerfClient)
 	perf := CheckConnectionToPerf{
-		client:     fake.NewFakeClient(objs...),
+		client:     fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
 		perfClient: mPerfCl,
 	}
 
@@ -46,7 +46,7 @@ func TestCheckConnectionToPerf_ShouldBeExecutedWithError(t *testing.T) {
 
 	mPerfCl := new(mock.MockPerfClient)
 	perf := CheckConnectionToPerf{
-		client:     fake.NewFakeClient(objs...),
+		client:     fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
 		perfClient: mPerfCl,
 	}
 
@@ -62,7 +62,7 @@ func TestCheckConnectionToPerf_ShouldBeExecutedWithError(t *testing.T) {
 func TestCheckConnectionToPerf_ShouldNotBeUpdated(t *testing.T) {
 	mPerfCl := new(mock.MockPerfClient)
 	perf := CheckConnectionToPerf{
-		client:     fake.NewFakeClient([]runtime.Object{}...),
+		client:     fake.NewClientBuilder().WithRuntimeObjects([]runtime.Object{}...).Build(),
 		perfClient: mPerfCl,
 	}
 

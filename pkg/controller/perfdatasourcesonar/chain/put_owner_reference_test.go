@@ -74,7 +74,7 @@ func TestPutOwnerReference_PerfServerShouldNotBeFound(t *testing.T) {
 
 	ch := PutOwnerReference{
 		scheme: scheme.Scheme,
-		client: fake.NewFakeClient(pds, ps),
+		client: fake.NewClientBuilder().WithRuntimeObjects(ps, pds).Build(),
 	}
 	assert.Error(t, ch.ServeRequest(pds))
 }
