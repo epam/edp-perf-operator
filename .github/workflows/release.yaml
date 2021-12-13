@@ -34,6 +34,8 @@ jobs:
 
             git-chglog -o release.md ${RELEASE_TAG}
 
+            echo "RELEASE_TAG=${RELEASE_TAG}" >> $GITHUB_ENV
+
       - name: Read release notes file
         id: release-notes
         uses: juliangruber/read-file-action@v1
