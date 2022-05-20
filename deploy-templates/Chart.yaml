@@ -23,10 +23,10 @@ annotations:
   artifacthub.io/license: Apache-2.0
   artifacthub.io/operator: "true"
   artifacthub.io/images: |
-    - name: perf-operator:2.10.0
-      image: epamedp/perf-operator:2.10.0
-    - name: perf-operator:2.9.0
-      image: epamedp/perf-operator:2.9.0
+    - name: perf-operator:2.11.0
+      image: epamedp/perf-operator:2.11.0
+    - name: alpine:3.15.4
+      image: alpine:3.15.4
   artifacthub.io/operatorCapabilities: Full Lifecycle
   artifacthub.io/crds: |
     - kind: PerfDataSourceGitLab
@@ -49,6 +49,16 @@ annotations:
       name: perfserver
       displayName: PerfServer
       description: Performance board server
+  artifacthub.io/crdsExamples: |
+    - apiVersion: v2.edp.epam.com/v1alpha1
+      kind: PerfServer
+      metadata:
+        name: PerfServer
+      spec:
+        apiUrl: https://test.com/perf
+        credentialName: perf-user
+        projectName: MYPROJ-EDP
+        rootUrl: https://test.com/unit/2074/delivery/summary
   artifacthub.io/links: |
     - name: EDP Documentation
       url: https://epam.github.io/edp-install/
