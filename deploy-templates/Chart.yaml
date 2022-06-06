@@ -53,7 +53,7 @@ annotations:
     - apiVersion: v2.edp.epam.com/v1alpha1
       kind: PerfServer
       metadata:
-        name: PerfServer
+        name: perfserver
       spec:
         apiUrl: https://test.com/perf
         credentialName: perf-user
