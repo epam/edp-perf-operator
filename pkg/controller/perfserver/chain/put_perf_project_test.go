@@ -2,10 +2,12 @@ package chain
 
 import (
 	"errors"
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
 )
 
 const fakeName = "fake-name"
@@ -18,8 +20,8 @@ func TestPutPerfProject_ProjectExistsShouldBeExecutedSuccessfully(t *testing.T) 
 
 	mPerfCl.On("ProjectExists", fakeName).Return(true, nil)
 
-	psr := &v1alpha1.PerfServer{
-		Spec: v1alpha1.PerfServerSpec{
+	psr := &perfApi.PerfServer{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -34,8 +36,8 @@ func TestPutPerfProject_ProjectDoesntExistShouldBeExecutedSuccessfully(t *testin
 
 	mPerfCl.On("ProjectExists", fakeName).Return(false, nil)
 
-	psr := &v1alpha1.PerfServer{
-		Spec: v1alpha1.PerfServerSpec{
+	psr := &perfApi.PerfServer{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -50,8 +52,8 @@ func TestPutPerfProject_ThrowErrorDuringProjectExistsCall(t *testing.T) {
 
 	mPerfCl.On("ProjectExists", fakeName).Return(false, errors.New("failed"))
 
-	psr := &v1alpha1.PerfServer{
-		Spec: v1alpha1.PerfServerSpec{
+	psr := &perfApi.PerfServer{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}

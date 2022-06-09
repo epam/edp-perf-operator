@@ -1,10 +1,11 @@
 package chain
 
 import (
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/pkg/errors"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
 	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfserver/chain/handler"
-	"github.com/pkg/errors"
 )
 
 type PutPerfProject struct {
@@ -12,7 +13,7 @@ type PutPerfProject struct {
 	perfClient perf.PerfClient
 }
 
-func (h PutPerfProject) ServeRequest(server *v1alpha1.PerfServer) error {
+func (h PutPerfProject) ServeRequest(server *perfApi.PerfServer) error {
 	log.Info("put PERF project", "name", server.Spec.ProjectName)
 	if err := h.tryToCreatePerfProject(server); err != nil {
 		return err
@@ -21,7 +22,7 @@ func (h PutPerfProject) ServeRequest(server *v1alpha1.PerfServer) error {
 	return nextServeOrNil(h.next, server)
 }
 
-func (h PutPerfProject) tryToCreatePerfProject(ps *v1alpha1.PerfServer) error {
+func (h PutPerfProject) tryToCreatePerfProject(ps *perfApi.PerfServer) error {
 	exists, err := h.perfClient.ProjectExists(ps.Spec.ProjectName)
 	if err != nil {
 		return err

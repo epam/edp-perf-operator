@@ -29,6 +29,7 @@ tramp
 # cask packages
 .cask/
 dist/
+bin/
 # Flycheck
 flycheck_*.el
 # server auth directory

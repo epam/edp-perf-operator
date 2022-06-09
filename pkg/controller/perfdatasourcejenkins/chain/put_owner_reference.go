@@ -2,14 +2,16 @@ package chain
 
 import (
 	"context"
-	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcejenkins/chain/handler"
-	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
-	"github.com/epam/edp-perf-operator/v2/pkg/util/consts"
+
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcejenkins/chain/handler"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/consts"
 )
 
 type PutOwnerReference struct {

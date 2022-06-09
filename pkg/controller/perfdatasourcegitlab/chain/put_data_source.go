@@ -1,14 +1,15 @@
 package chain
 
 import (
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/datasource"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type PutDataSource struct {
@@ -20,7 +21,7 @@ const (
 	gitLabSecretName = "gitlab-admin-password"
 )
 
-func (h PutDataSource) ServeRequest(dataSource *v1alpha1.PerfDataSourceGitLab) error {
+func (h PutDataSource) ServeRequest(dataSource *perfApi.PerfDataSourceGitLab) error {
 	log.Info("start creating/updating GitLab data source in PERF", "name", dataSource.Name)
 	if err := h.tryToPutDataSource(dataSource); err != nil {
 		setFailedStatus(dataSource)
@@ -31,15 +32,15 @@ func (h PutDataSource) ServeRequest(dataSource *v1alpha1.PerfDataSourceGitLab) e
 	return nil
 }
 
-func setFailedStatus(ds *v1alpha1.PerfDataSourceGitLab) {
+func setFailedStatus(ds *perfApi.PerfDataSourceGitLab) {
 	ds.Status.Status = "error"
 }
 
-func setSuccessStatus(ds *v1alpha1.PerfDataSourceGitLab) {
+func setSuccessStatus(ds *perfApi.PerfDataSourceGitLab) {
 	ds.Status.Status = "created"
 }
 
-func (h PutDataSource) tryToPutDataSource(dsResource *v1alpha1.PerfDataSourceGitLab) error {
+func (h PutDataSource) tryToPutDataSource(dsResource *perfApi.PerfDataSourceGitLab) error {
 	ps, err := cluster.GetPerfServerCr(h.client, dsResource.Spec.PerfServerName, dsResource.Namespace)
 	if err != nil {
 		return err
@@ -61,7 +62,7 @@ func (h PutDataSource) tryToPutDataSource(dsResource *v1alpha1.PerfDataSourceGit
 	return h.createDataSource(ps.Spec.ProjectName, dsResource)
 }
 
-func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *v1alpha1.PerfServer) error {
+func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *perfApi.PerfServer) error {
 	if dsReq.Active {
 		log.Info("PERF data source is already activated.", "name", dsReq.Name)
 		return nil
@@ -69,7 +70,7 @@ func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *v1alph
 	return h.perfClient.ActivateDataSource(ps.Spec.ProjectName, dsReq.Id)
 }
 
-func (h PutDataSource) tryToUpdateDataSource(dsResource *v1alpha1.PerfDataSourceGitLab, dsReq *dto.DataSource) error {
+func (h PutDataSource) tryToUpdateDataSource(dsResource *perfApi.PerfDataSourceGitLab, dsReq *dto.DataSource) error {
 	branchDiff := getBranchConfigDifference(dsResource, dsReq)
 	repoDiff := getRepositoryConfigDifference(dsResource, dsReq)
 	if branchDiff == nil && repoDiff == nil {
@@ -93,17 +94,17 @@ func (h PutDataSource) tryToUpdateDataSource(dsResource *v1alpha1.PerfDataSource
 	return h.perfClient.UpdateDataSource(dsCommand)
 }
 
-func getBranchConfigDifference(dsResource *v1alpha1.PerfDataSourceGitLab, dsReq *dto.DataSource) []string {
+func getBranchConfigDifference(dsResource *perfApi.PerfDataSourceGitLab, dsReq *dto.DataSource) []string {
 	conf := common.ConvertToStringArray(dsReq.Config["branches"])
 	return datasource.GetMissingElementsInDataSource(dsResource.Spec.Config.Branches, conf)
 }
 
-func getRepositoryConfigDifference(dsResource *v1alpha1.PerfDataSourceGitLab, dsReq *dto.DataSource) []string {
+func getRepositoryConfigDifference(dsResource *perfApi.PerfDataSourceGitLab, dsReq *dto.DataSource) []string {
 	conf := common.ConvertToStringArray(dsReq.Config["repositories"])
 	return datasource.GetMissingElementsInDataSource(dsResource.Spec.Config.Repositories, conf)
 }
 
-func (h PutDataSource) createDataSource(projectName string, dsResource *v1alpha1.PerfDataSourceGitLab) error {
+func (h PutDataSource) createDataSource(projectName string, dsResource *perfApi.PerfDataSourceGitLab) error {
 	s, err := cluster.GetSecret(h.client, gitLabSecretName, dsResource.Namespace)
 	if err != nil {
 		return err

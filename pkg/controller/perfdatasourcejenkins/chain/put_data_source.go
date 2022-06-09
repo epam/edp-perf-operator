@@ -1,14 +1,15 @@
 package chain
 
 import (
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/datasource"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type PutDataSource struct {
@@ -18,7 +19,7 @@ type PutDataSource struct {
 
 const jenkinsDataSourceSecretName = "jenkins-admin-token"
 
-func (h PutDataSource) ServeRequest(dataSource *v1alpha1.PerfDataSourceJenkins) error {
+func (h PutDataSource) ServeRequest(dataSource *perfApi.PerfDataSourceJenkins) error {
 	log.Info("start creating/updating Jenkins data source in PERF", "name", dataSource.Name)
 	if err := h.tryToPutDataSource(dataSource); err != nil {
 		setFailedStatus(dataSource)
@@ -29,15 +30,15 @@ func (h PutDataSource) ServeRequest(dataSource *v1alpha1.PerfDataSourceJenkins) 
 	return nil
 }
 
-func setFailedStatus(ds *v1alpha1.PerfDataSourceJenkins) {
+func setFailedStatus(ds *perfApi.PerfDataSourceJenkins) {
 	ds.Status.Status = "error"
 }
 
-func setSuccessStatus(ds *v1alpha1.PerfDataSourceJenkins) {
+func setSuccessStatus(ds *perfApi.PerfDataSourceJenkins) {
 	ds.Status.Status = "created"
 }
 
-func (h PutDataSource) tryToPutDataSource(dsResource *v1alpha1.PerfDataSourceJenkins) error {
+func (h PutDataSource) tryToPutDataSource(dsResource *perfApi.PerfDataSourceJenkins) error {
 	ps, err := cluster.GetPerfServerCr(h.client, dsResource.Spec.PerfServerName, dsResource.Namespace)
 	if err != nil {
 		return err
@@ -59,7 +60,7 @@ func (h PutDataSource) tryToPutDataSource(dsResource *v1alpha1.PerfDataSourceJen
 	return h.createDataSource(ps.Spec.ProjectName, dsResource)
 }
 
-func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *v1alpha1.PerfServer) error {
+func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *perfApi.PerfServer) error {
 	if dsReq.Active {
 		log.Info("PERF Jenkins data source is already activated.", "name", dsReq.Name)
 		return nil
@@ -67,7 +68,7 @@ func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *v1alph
 	return h.perfClient.ActivateDataSource(ps.Spec.ProjectName, dsReq.Id)
 }
 
-func (h PutDataSource) tryToUpdateDataSource(dsResource *v1alpha1.PerfDataSourceJenkins, dsReq *dto.DataSource) error {
+func (h PutDataSource) tryToUpdateDataSource(dsResource *perfApi.PerfDataSourceJenkins, dsReq *dto.DataSource) error {
 	diff := getConfigDifference(dsResource, dsReq)
 	if len(diff) == 0 {
 		log.Info("nothing to update in Jenkins data source", "name", dsReq.Name)
@@ -89,12 +90,12 @@ func (h PutDataSource) tryToUpdateDataSource(dsResource *v1alpha1.PerfDataSource
 	return h.perfClient.UpdateDataSource(dsCommand)
 }
 
-func getConfigDifference(dsResource *v1alpha1.PerfDataSourceJenkins, dsReq *dto.DataSource) []string {
+func getConfigDifference(dsResource *perfApi.PerfDataSourceJenkins, dsReq *dto.DataSource) []string {
 	conf := common.ConvertToStringArray(dsReq.Config["jobNames"])
 	return datasource.GetMissingElementsInDataSource(dsResource.Spec.Config.JobNames, conf)
 }
 
-func (h PutDataSource) createDataSource(projectName string, dsResource *v1alpha1.PerfDataSourceJenkins) error {
+func (h PutDataSource) createDataSource(projectName string, dsResource *perfApi.PerfDataSourceJenkins) error {
 	s, err := cluster.GetSecret(h.client, jenkinsDataSourceSecretName, dsResource.Namespace)
 	if err != nil {
 		return err

@@ -2,12 +2,14 @@ package chain
 
 import (
 	"context"
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+
+	"github.com/pkg/errors"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
 	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfserver/chain/handler"
-	"github.com/pkg/errors"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
 type CheckConnectionToPerf struct {
@@ -16,7 +18,7 @@ type CheckConnectionToPerf struct {
 	perfClient perf.PerfClient
 }
 
-func (h CheckConnectionToPerf) ServeRequest(server *v1alpha1.PerfServer) error {
+func (h CheckConnectionToPerf) ServeRequest(server *perfApi.PerfServer) error {
 	log.Info("start checking connection to PERF", "url", server.Spec.RootUrl)
 	connected, err := h.perfClient.Connected()
 	if err != nil {
@@ -35,8 +37,8 @@ func (h CheckConnectionToPerf) ServeRequest(server *v1alpha1.PerfServer) error {
 	return nextServeOrNil(h.next, server)
 }
 
-func (h CheckConnectionToPerf) updateStatus(server *v1alpha1.PerfServer) {
-	server.Status.LastTimeUpdated = time.Now()
+func (h CheckConnectionToPerf) updateStatus(server *perfApi.PerfServer) {
+	server.Status.LastTimeUpdated = metaV1.Now()
 	if err := h.client.Status().Update(context.TODO(), server); err != nil {
 		_ = h.client.Update(context.TODO(), server)
 	}

@@ -1,13 +1,16 @@
 package chain
 
 import (
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
+
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 )
 
 const (
@@ -16,7 +19,7 @@ const (
 )
 
 func TestPutOwnerReference_PerfDataSourceContainsPerfServerOwnerReference(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceSonar{
+	pds := &perfApi.PerfDataSourceSonar{
 		ObjectMeta: v1.ObjectMeta{
 			OwnerReferences: []v1.OwnerReference{
 				{
@@ -30,12 +33,12 @@ func TestPutOwnerReference_PerfDataSourceContainsPerfServerOwnerReference(t *tes
 }
 
 func TestPutOwnerReference_ShouldSetOwnerReference(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceSonar{
+	pds := &perfApi.PerfDataSourceSonar{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfDataSourceSonarSpec{
+		Spec: perfApi.PerfDataSourceSonarSpec{
 			CodebaseName:   fakeName,
 			PerfServerName: fakeName,
 		},
@@ -61,16 +64,16 @@ func TestPutOwnerReference_ShouldSetOwnerReference(t *testing.T) {
 }
 
 func TestPutOwnerReference_PerfServerShouldNotBeFound(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceSonar{
+	pds := &perfApi.PerfDataSourceSonar{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfDataSourceSonarSpec{
+		Spec: perfApi.PerfDataSourceSonarSpec{
 			PerfServerName: fakeName,
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{}
+	ps := &perfApi.PerfServer{}
 
 	ch := PutOwnerReference{
 		scheme: scheme.Scheme,

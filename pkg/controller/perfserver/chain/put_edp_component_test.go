@@ -1,14 +1,17 @@
 package chain
 
 import (
-	edpApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
+
+	edpApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1alpha1"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 )
 
 const (
@@ -34,7 +37,7 @@ func TestPutEdpComponent_EdpComponentAlreadyExists(t *testing.T) {
 		client: fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
 	}
 
-	psr := &v1alpha1.PerfServer{
+	psr := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
@@ -53,7 +56,7 @@ func TestPutEdpComponent_SchemeDoesntContainEdpComponent(t *testing.T) {
 		client: fake.NewClientBuilder().WithRuntimeObjects([]runtime.Object{}...).Build(),
 	}
 
-	psr := &v1alpha1.PerfServer{
+	psr := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
@@ -66,7 +69,7 @@ func TestPutEdpComponent_SchemeDoesntContainEdpComponent(t *testing.T) {
 func TestPutEdpComponent_IconDoesntExist(t *testing.T) {
 	edpComp := &edpApi.EDPComponent{}
 
-	psr := &v1alpha1.PerfServer{
+	psr := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,

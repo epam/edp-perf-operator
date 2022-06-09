@@ -4,16 +4,19 @@ import (
 	"bufio"
 	"context"
 	"encoding/base64"
-	edpCompApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
 	"io/ioutil"
+	"os"
+
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	edpCompApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1alpha1"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 )
 
 type PutEdpComponent struct {
@@ -26,7 +29,7 @@ const (
 	perfIconPath         = "/usr/local/configs/img/perf.svg"
 )
 
-func (h PutEdpComponent) ServeRequest(server *v1alpha1.PerfServer) error {
+func (h PutEdpComponent) ServeRequest(server *perfApi.PerfServer) error {
 	log.Info("start creating EDP component", "name", server.Name)
 	if err := h.putEdpComponent(server); err != nil {
 		return err
@@ -35,7 +38,7 @@ func (h PutEdpComponent) ServeRequest(server *v1alpha1.PerfServer) error {
 	return nil
 }
 
-func (h PutEdpComponent) putEdpComponent(server *v1alpha1.PerfServer) error {
+func (h PutEdpComponent) putEdpComponent(server *perfApi.PerfServer) error {
 	comp := &edpCompApi.EDPComponent{}
 	err := h.client.Get(context.TODO(), types.NamespacedName{
 		Name:      server.Name,
@@ -51,14 +54,14 @@ func (h PutEdpComponent) putEdpComponent(server *v1alpha1.PerfServer) error {
 	return nil
 }
 
-func (h PutEdpComponent) createEdpComponent(server *v1alpha1.PerfServer) error {
+func (h PutEdpComponent) createEdpComponent(server *perfApi.PerfServer) error {
 	icon, err := getIcon()
 	if err != nil {
 		return err
 	}
 
 	comp := &edpCompApi.EDPComponent{
-		ObjectMeta: metav1.ObjectMeta{
+		ObjectMeta: metaV1.ObjectMeta{
 			Name:      server.Name,
 			Namespace: server.Namespace,
 		},

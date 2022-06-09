@@ -1,4 +1,4 @@
-package v1alpha1
+package v1
 
 import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +28,7 @@ type PerfServerStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName=ps
-// +kubebuilder:deprecatedversion
+// +kubebuilder:storageversion
 
 // PerfServer is the Schema for the PerfServers API
 type PerfServer struct {

@@ -1,10 +1,11 @@
 package command
 
 import (
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"strings"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
-	"strings"
 )
 
 type DataSourceType string
@@ -63,7 +64,7 @@ type DataSourceGitLabConfigDto struct {
 	Branches     []string
 }
 
-func GetSonarDsCreateCommand(ds *v1alpha1.PerfDataSourceSonar, username, password string) DataSourceCommand {
+func GetSonarDsCreateCommand(ds *perfApi.PerfDataSourceSonar, username, password string) DataSourceCommand {
 	return DataSourceCommand{
 		Name: ds.Spec.Name,
 		Type: DataSourceType(strings.ToUpper(ds.Spec.Type)),
@@ -90,7 +91,7 @@ func GetSonarDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) Da
 	}
 }
 
-func GetJenkinsDsCreateCommand(ds *v1alpha1.PerfDataSourceJenkins, username, password string) DataSourceCommand {
+func GetJenkinsDsCreateCommand(ds *perfApi.PerfDataSourceJenkins, username, password string) DataSourceCommand {
 	return DataSourceCommand{
 		Name: ds.Spec.Name,
 		Type: DataSourceType(strings.ToUpper(ds.Spec.Type)),
@@ -117,7 +118,7 @@ func GetJenkinsDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) 
 	}
 }
 
-func GetGitLabDsCreateCommand(ds *v1alpha1.PerfDataSourceGitLab, username, password string) DataSourceCommand {
+func GetGitLabDsCreateCommand(ds *perfApi.PerfDataSourceGitLab, username, password string) DataSourceCommand {
 	return DataSourceCommand{
 		Name: ds.Spec.Name,
 		Type: DataSourceType(strings.ToUpper(ds.Spec.Type)),

@@ -1,14 +1,15 @@
 package chain
 
 import (
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/datasource"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type PutDataSource struct {
@@ -20,7 +21,7 @@ const (
 	sonarDataSourceSecretName = "sonar-admin-password"
 )
 
-func (h PutDataSource) ServeRequest(dataSource *v1alpha1.PerfDataSourceSonar) error {
+func (h PutDataSource) ServeRequest(dataSource *perfApi.PerfDataSourceSonar) error {
 	log.Info("start creating/updating Sonar data source in PERF", "name", dataSource.Name)
 	if err := h.tryToPutDataSource(dataSource); err != nil {
 		setFailedStatus(dataSource)
@@ -31,15 +32,15 @@ func (h PutDataSource) ServeRequest(dataSource *v1alpha1.PerfDataSourceSonar) er
 	return nil
 }
 
-func setFailedStatus(ds *v1alpha1.PerfDataSourceSonar) {
+func setFailedStatus(ds *perfApi.PerfDataSourceSonar) {
 	ds.Status.Status = "error"
 }
 
-func setSuccessStatus(ds *v1alpha1.PerfDataSourceSonar) {
+func setSuccessStatus(ds *perfApi.PerfDataSourceSonar) {
 	ds.Status.Status = "created"
 }
 
-func (h PutDataSource) tryToPutDataSource(dsResource *v1alpha1.PerfDataSourceSonar) error {
+func (h PutDataSource) tryToPutDataSource(dsResource *perfApi.PerfDataSourceSonar) error {
 	ps, err := cluster.GetPerfServerCr(h.client, dsResource.Spec.PerfServerName, dsResource.Namespace)
 	if err != nil {
 		return err
@@ -61,7 +62,7 @@ func (h PutDataSource) tryToPutDataSource(dsResource *v1alpha1.PerfDataSourceSon
 	return h.createDataSource(ps.Spec.ProjectName, dsResource)
 }
 
-func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *v1alpha1.PerfServer) error {
+func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *perfApi.PerfServer) error {
 	if dsReq.Active {
 		log.Info("PERF data source is already activated.", "name", dsReq.Name)
 		return nil
@@ -69,7 +70,7 @@ func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *v1alph
 	return h.perfClient.ActivateDataSource(ps.Spec.ProjectName, dsReq.Id)
 }
 
-func (h PutDataSource) tryToUpdateDataSource(dsResource *v1alpha1.PerfDataSourceSonar, dsReq *dto.DataSource) error {
+func (h PutDataSource) tryToUpdateDataSource(dsResource *perfApi.PerfDataSourceSonar, dsReq *dto.DataSource) error {
 	diff := getConfigDifference(dsResource, dsReq)
 	if len(diff) == 0 {
 		log.Info("nothing to update in Sonar data source", "name", dsReq.Name)
@@ -91,12 +92,12 @@ func (h PutDataSource) tryToUpdateDataSource(dsResource *v1alpha1.PerfDataSource
 	return h.perfClient.UpdateDataSource(dsCommand)
 }
 
-func getConfigDifference(dsResource *v1alpha1.PerfDataSourceSonar, dsReq *dto.DataSource) []string {
+func getConfigDifference(dsResource *perfApi.PerfDataSourceSonar, dsReq *dto.DataSource) []string {
 	conf := common.ConvertToStringArray(dsReq.Config["projectKeys"])
 	return datasource.GetMissingElementsInDataSource(dsResource.Spec.Config.ProjectKeys, conf)
 }
 
-func (h PutDataSource) createDataSource(projectName string, dsResource *v1alpha1.PerfDataSourceSonar) error {
+func (h PutDataSource) createDataSource(projectName string, dsResource *perfApi.PerfDataSourceSonar) error {
 	s, err := cluster.GetSecret(h.client, sonarDataSourceSecretName, dsResource.Namespace)
 	if err != nil {
 		return err

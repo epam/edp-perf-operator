@@ -30,27 +30,27 @@ annotations:
   artifacthub.io/operatorCapabilities: Full Lifecycle
   artifacthub.io/crds: |
     - kind: PerfDataSourceGitLab
-      version: v2.edp.epam.com/v1alpha1
+      version: v2.edp.epam.com/v1
       name: perfdatasourcegitlab
       displayName: PerfDataSourceGitLab
       description: Performance board configuration for GitLab
     - kind: PerfDataSourceJenkins
-      version: v2.edp.epam.com/v1alpha1
+      version: v2.edp.epam.com/v1
       name: perfdatasourcejenkins
       displayName: PerfDataSourceJenkins
       description: Performance board configuration with Jenkins
     - kind: PerfDataSourceSonar
-      version: v2.edp.epam.com/v1alpha1
+      version: v2.edp.epam.com/v1
       name: perfdatasourcesonar
       displayName: PerfDataSourceSonar
       description: Performance board configuration with Sonar
     - kind: PerfServer
-      version: v2.edp.epam.com/v1alpha1
+      version: v2.edp.epam.com/v1
       name: perfserver
       displayName: PerfServer
       description: Performance board server
   artifacthub.io/crdsExamples: |
-    - apiVersion: v2.edp.epam.com/v1alpha1
+    - apiVersion: v2.edp.epam.com/v1
       kind: PerfServer
       metadata:
         name: perfserver

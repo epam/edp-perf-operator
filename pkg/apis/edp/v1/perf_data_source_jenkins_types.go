@@ -1,4 +1,4 @@
-package v1alpha1
+package v1
 
 import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +27,7 @@ type PerfDataSourceJenkinsStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName=pdsj,path=perfdatasourcejenkinses
-// +kubebuilder:deprecatedversion
+// +kubebuilder:storageversion
 
 // PerfDataSourceJenkins is the Schema for the PerfDataSourceJenkinses API
 type PerfDataSourceJenkins struct {

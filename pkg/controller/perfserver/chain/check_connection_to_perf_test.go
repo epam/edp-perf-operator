@@ -2,18 +2,20 @@ package chain
 
 import (
 	"errors"
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
 )
 
 func TestCheckConnectionToPerf_ShouldBeExecutedSuccessfully(t *testing.T) {
-	ps := &v1alpha1.PerfServer{}
+	ps := &perfApi.PerfServer{}
 
 	objs := []runtime.Object{
 		ps,
@@ -29,14 +31,14 @@ func TestCheckConnectionToPerf_ShouldBeExecutedSuccessfully(t *testing.T) {
 
 	mPerfCl.On("Connected").Return(true, nil)
 
-	psr := &v1alpha1.PerfServer{}
+	psr := &perfApi.PerfServer{}
 	err := perf.ServeRequest(psr)
 	assert.NoError(t, err)
 	assert.Equal(t, true, psr.Status.Available)
 }
 
 func TestCheckConnectionToPerf_ShouldBeExecutedWithError(t *testing.T) {
-	ps := &v1alpha1.PerfServer{}
+	ps := &perfApi.PerfServer{}
 
 	objs := []runtime.Object{
 		ps,
@@ -52,8 +54,8 @@ func TestCheckConnectionToPerf_ShouldBeExecutedWithError(t *testing.T) {
 
 	mPerfCl.On("Connected").Return(false, errors.New("failed"))
 
-	psr := &v1alpha1.PerfServer{
-		Status: v1alpha1.PerfServerStatus{},
+	psr := &perfApi.PerfServer{
+		Status: perfApi.PerfServerStatus{},
 	}
 	err := perf.ServeRequest(psr)
 	assert.Error(t, err)
@@ -68,8 +70,8 @@ func TestCheckConnectionToPerf_ShouldNotBeUpdated(t *testing.T) {
 
 	mPerfCl.On("Connected").Return(true, nil)
 
-	psr := &v1alpha1.PerfServer{
-		Status: v1alpha1.PerfServerStatus{},
+	psr := &perfApi.PerfServer{
+		Status: perfApi.PerfServerStatus{},
 	}
 	err := perf.ServeRequest(psr)
 	assert.NoError(t, err)

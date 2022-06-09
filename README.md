@@ -70,7 +70,7 @@ In order to install the PERF Operator, follow the steps below:
 5. Create PerfServer CR:
 
     ```bash
-    apiVersion: v2.edp.epam.com/v1alpha1
+    apiVersion: v2.edp.epam.com/v1
     kind: PerfServer
     metadata:
       name: <perf_cr_name>

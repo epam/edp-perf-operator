@@ -2,11 +2,11 @@ package perfserver
 
 import (
 	"context"
-	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
-	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfserver/chain"
+	"time"
+
 	"github.com/go-logr/logr"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -14,7 +14,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfserver/chain"
 )
 
 func NewReconcilePerfServer(client client.Client, scheme *runtime.Scheme, log logr.Logger) *ReconcilePerfServer {
@@ -50,7 +53,7 @@ func (r *ReconcilePerfServer) Reconcile(ctx context.Context, request reconcile.R
 
 	i := &perfApi.PerfServer{}
 	if err := r.client.Get(ctx, request.NamespacedName, i); err != nil {
-		if k8serrors.IsNotFound(err) {
+		if k8sErrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
@@ -73,7 +76,7 @@ func (r *ReconcilePerfServer) Reconcile(ctx context.Context, request reconcile.R
 }
 
 func (r ReconcilePerfServer) updateStatus(ctx context.Context, server *perfApi.PerfServer) {
-	server.Status.LastTimeUpdated = time.Now()
+	server.Status.LastTimeUpdated = metaV1.Now()
 	if err := r.client.Status().Update(ctx, server); err != nil {
 		_ = r.client.Update(ctx, server)
 	}

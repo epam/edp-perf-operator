@@ -3,12 +3,9 @@ package chain
 import (
 	"errors"
 	"fmt"
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
-	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
-	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
+	"strings"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,8 +13,13 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"strings"
-	"testing"
+
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 )
 
 const (
@@ -31,7 +33,7 @@ func init() {
 }
 
 func TestPutDataSource_ShouldUpdateJenkinsDataSourceWithoutActivating(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceJenkins{
+	pds := &perfApi.PerfDataSourceJenkins{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -41,10 +43,10 @@ func TestPutDataSource_ShouldUpdateJenkinsDataSourceWithoutActivating(t *testing
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceJenkinsSpec{
+		Spec: perfApi.PerfDataSourceJenkinsSpec{
 			PerfServerName: fakeName,
 			Type:           jenkinsDsType,
-			Config: v1alpha1.DataSourceJenkinsConfig{
+			Config: perfApi.DataSourceJenkinsConfig{
 				JobNames: []string{fmt.Sprintf("/%v/%v-Build-%v", fakeName, strings.ToUpper(fakeName), fakeName),
 					fmt.Sprintf("/%v/%v-Build-%v", fakeCodebaseName, strings.ToUpper(fakeName), fakeCodebaseName)},
 				Url: fakeName,
@@ -52,12 +54,12 @@ func TestPutDataSource_ShouldUpdateJenkinsDataSourceWithoutActivating(t *testing
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -104,7 +106,7 @@ func TestPutDataSource_ShouldUpdateJenkinsDataSourceWithoutActivating(t *testing
 }
 
 func TestPutDataSource_ShouldUpdateJenkinsDataSourceWithActivating(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceJenkins{
+	pds := &perfApi.PerfDataSourceJenkins{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -114,10 +116,10 @@ func TestPutDataSource_ShouldUpdateJenkinsDataSourceWithActivating(t *testing.T)
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceJenkinsSpec{
+		Spec: perfApi.PerfDataSourceJenkinsSpec{
 			PerfServerName: fakeName,
 			Type:           jenkinsDsType,
-			Config: v1alpha1.DataSourceJenkinsConfig{
+			Config: perfApi.DataSourceJenkinsConfig{
 				JobNames: []string{fmt.Sprintf("/%v/%v-Build-%v", fakeName, strings.ToUpper(fakeName), fakeName),
 					fmt.Sprintf("/%v/%v-Build-%v", fakeCodebaseName, strings.ToUpper(fakeName), fakeCodebaseName)},
 				Url: fakeName,
@@ -125,12 +127,12 @@ func TestPutDataSource_ShouldUpdateJenkinsDataSourceWithActivating(t *testing.T)
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -184,7 +186,7 @@ func TestPutDataSource_ShouldUpdateJenkinsDataSourceWithActivating(t *testing.T)
 }
 
 func TestPutDataSource_ShouldCreateJenkinsDataSource(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceJenkins{
+	pds := &perfApi.PerfDataSourceJenkins{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -194,10 +196,10 @@ func TestPutDataSource_ShouldCreateJenkinsDataSource(t *testing.T) {
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceJenkinsSpec{
+		Spec: perfApi.PerfDataSourceJenkinsSpec{
 			PerfServerName: fakeName,
 			Type:           jenkinsDsType,
-			Config: v1alpha1.DataSourceJenkinsConfig{
+			Config: perfApi.DataSourceJenkinsConfig{
 				JobNames: []string{fmt.Sprintf("/%v/%v-Build-%v", fakeName, strings.ToUpper(fakeName), fakeName),
 					fmt.Sprintf("/%v/%v-Build-%v", fakeCodebaseName, strings.ToUpper(fakeName), fakeCodebaseName)},
 				Url: fakeName,
@@ -205,12 +207,12 @@ func TestPutDataSource_ShouldCreateJenkinsDataSource(t *testing.T) {
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -254,12 +256,12 @@ func TestPutDataSource_ShouldCreateJenkinsDataSource(t *testing.T) {
 }
 
 func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -276,7 +278,7 @@ func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
 
 	mPerfCl.On("GetProjectDataSource", fakeName, "").Return(nil, errors.New("failed"))
 
-	pds := &v1alpha1.PerfDataSourceJenkins{
+	pds := &perfApi.PerfDataSourceJenkins{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -293,7 +295,7 @@ func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
 }
 
 func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceJenkins{
+	pds := &perfApi.PerfDataSourceJenkins{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -303,9 +305,9 @@ func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceJenkinsSpec{
+		Spec: perfApi.PerfDataSourceJenkinsSpec{
 			Type: jenkinsDsType,
-			Config: v1alpha1.DataSourceJenkinsConfig{
+			Config: perfApi.DataSourceJenkinsConfig{
 				JobNames: []string{fmt.Sprintf("/%v/%v-Build-%v", fakeName, strings.ToUpper(fakeName), fakeName),
 					fmt.Sprintf("/%v/%v-Build-%v", fakeCodebaseName, strings.ToUpper(fakeName), fakeCodebaseName)},
 				Url: fakeName,
@@ -313,12 +315,12 @@ func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -371,7 +373,7 @@ func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
 }
 
 func TestPutDataSource_ShouldNotUpdateDataSourceBecauseOfMissingNewParameters(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceJenkins{
+	pds := &perfApi.PerfDataSourceJenkins{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -381,22 +383,22 @@ func TestPutDataSource_ShouldNotUpdateDataSourceBecauseOfMissingNewParameters(t 
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceJenkinsSpec{
+		Spec: perfApi.PerfDataSourceJenkinsSpec{
 			PerfServerName: fakeName,
 			Type:           jenkinsDsType,
-			Config: v1alpha1.DataSourceJenkinsConfig{
+			Config: perfApi.DataSourceJenkinsConfig{
 				JobNames: []string{fmt.Sprintf("/%v/%v-Build-%v", fakeName, strings.ToUpper(fakeName), fakeName)},
 				Url:      fakeName,
 			},
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}

@@ -2,12 +2,8 @@ package chain
 
 import (
 	"errors"
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
-	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
-	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +11,13 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
+
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
+	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 )
 
 const (
@@ -28,7 +30,7 @@ func init() {
 }
 
 func TestPutDataSource_ShouldUpdateGitLabDataSourceWithoutActivating(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceGitLab{
+	pds := &perfApi.PerfDataSourceGitLab{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -38,10 +40,10 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithoutActivating(t *testing.
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceGitLabSpec{
+		Spec: perfApi.PerfDataSourceGitLabSpec{
 			PerfServerName: fakeName,
 			Type:           gitlabDsType,
-			Config: v1alpha1.DataSourceGitLabConfig{
+			Config: perfApi.DataSourceGitLabConfig{
 				Repositories: []string{"repo1"},
 				Branches:     []string{"master"},
 				Url:          fakeName,
@@ -49,12 +51,12 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithoutActivating(t *testing.
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -106,7 +108,7 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithoutActivating(t *testing.
 }
 
 func TestPutDataSource_ShouldUpdateGitLabDataSourceWithActivating(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceGitLab{
+	pds := &perfApi.PerfDataSourceGitLab{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -116,10 +118,10 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithActivating(t *testing.T) 
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceGitLabSpec{
+		Spec: perfApi.PerfDataSourceGitLabSpec{
 			PerfServerName: fakeName,
 			Type:           gitlabDsType,
-			Config: v1alpha1.DataSourceGitLabConfig{
+			Config: perfApi.DataSourceGitLabConfig{
 				Repositories: []string{"repo1"},
 				Branches:     []string{"master"},
 				Url:          fakeName,
@@ -127,12 +129,12 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithActivating(t *testing.T) 
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -191,7 +193,7 @@ func TestPutDataSource_ShouldUpdateGitLabDataSourceWithActivating(t *testing.T) 
 }
 
 func TestPutDataSource_ShouldCreateGitLabDataSource(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceGitLab{
+	pds := &perfApi.PerfDataSourceGitLab{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -201,10 +203,10 @@ func TestPutDataSource_ShouldCreateGitLabDataSource(t *testing.T) {
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceGitLabSpec{
+		Spec: perfApi.PerfDataSourceGitLabSpec{
 			PerfServerName: fakeName,
 			Type:           gitlabDsType,
-			Config: v1alpha1.DataSourceGitLabConfig{
+			Config: perfApi.DataSourceGitLabConfig{
 				Repositories: []string{"repo1"},
 				Branches:     []string{"master"},
 				Url:          fakeName,
@@ -212,12 +214,12 @@ func TestPutDataSource_ShouldCreateGitLabDataSource(t *testing.T) {
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -263,12 +265,12 @@ func TestPutDataSource_ShouldCreateGitLabDataSource(t *testing.T) {
 }
 
 func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -285,7 +287,7 @@ func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
 
 	mPerfCl.On("GetProjectDataSource", fakeName, "").Return(nil, errors.New("failed"))
 
-	pds := &v1alpha1.PerfDataSourceGitLab{
+	pds := &perfApi.PerfDataSourceGitLab{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -302,7 +304,7 @@ func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
 }
 
 func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceGitLab{
+	pds := &perfApi.PerfDataSourceGitLab{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -312,9 +314,9 @@ func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceGitLabSpec{
+		Spec: perfApi.PerfDataSourceGitLabSpec{
 			Type: gitlabDsType,
-			Config: v1alpha1.DataSourceGitLabConfig{
+			Config: perfApi.DataSourceGitLabConfig{
 				Repositories: []string{"repo1"},
 				Branches:     []string{"master"},
 				Url:          fakeName,
@@ -322,12 +324,12 @@ func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}
@@ -385,7 +387,7 @@ func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
 }
 
 func TestPutDataSource_ShouldNotUpdateDataSourceBecauseOfMissingNewParameters(t *testing.T) {
-	pds := &v1alpha1.PerfDataSourceGitLab{
+	pds := &perfApi.PerfDataSourceGitLab{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: fakeNamespace,
 			OwnerReferences: []v1.OwnerReference{
@@ -395,10 +397,10 @@ func TestPutDataSource_ShouldNotUpdateDataSourceBecauseOfMissingNewParameters(t 
 				},
 			},
 		},
-		Spec: v1alpha1.PerfDataSourceGitLabSpec{
+		Spec: perfApi.PerfDataSourceGitLabSpec{
 			PerfServerName: fakeName,
 			Type:           gitlabDsType,
-			Config: v1alpha1.DataSourceGitLabConfig{
+			Config: perfApi.DataSourceGitLabConfig{
 				Repositories: []string{"repo1"},
 				Branches:     []string{"master"},
 				Url:          fakeName,
@@ -406,12 +408,12 @@ func TestPutDataSource_ShouldNotUpdateDataSourceBecauseOfMissingNewParameters(t 
 		},
 	}
 
-	ps := &v1alpha1.PerfServer{
+	ps := &perfApi.PerfServer{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      fakeName,
 			Namespace: fakeNamespace,
 		},
-		Spec: v1alpha1.PerfServerSpec{
+		Spec: perfApi.PerfServerSpec{
 			ProjectName: fakeName,
 		},
 	}

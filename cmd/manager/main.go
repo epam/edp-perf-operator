@@ -4,15 +4,6 @@ import (
 	"flag"
 	"os"
 
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
-	buildInfo "github.com/epam/edp-common/pkg/config"
-	edpCompApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1alpha1"
-	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcegitlab"
-	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcejenkins"
-	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcesonar"
-	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfserver"
-	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/rest"
 
@@ -29,6 +20,18 @@ import (
 
 	//+kubebuilder:scaffold:imports
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
+	buildInfo "github.com/epam/edp-common/pkg/config"
+	edpCompApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1alpha1"
+
+	perfApiV1 "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	perfApiV1Alpha "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcegitlab"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcejenkins"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcesonar"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfserver"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
 )
 
 var (
@@ -41,7 +44,9 @@ const perfOperatorLock = "edp-perf-operator-lock"
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(perfApi.AddToScheme(scheme))
+	utilruntime.Must(perfApiV1Alpha.AddToScheme(scheme))
+
+	utilruntime.Must(perfApiV1.AddToScheme(scheme))
 
 	utilruntime.Must(codebaseApi.AddToScheme(scheme))
 

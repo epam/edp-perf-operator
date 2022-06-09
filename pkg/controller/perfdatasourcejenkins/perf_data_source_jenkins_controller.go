@@ -2,23 +2,25 @@ package perfdatasourcejenkins
 
 import (
 	"context"
-	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
-	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
-	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcejenkins/chain"
-	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
-	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
+	"reflect"
+	"time"
+
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
+
+	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
+	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcejenkins/chain"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
+	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 )
 
 var _ reconcile.Reconciler = &ReconcilePerfDataSourceJenkins{}
@@ -62,7 +64,7 @@ func (r *ReconcilePerfDataSourceJenkins) Reconcile(ctx context.Context, request 
 
 	i := &perfApi.PerfDataSourceJenkins{}
 	if err := r.client.Get(ctx, request.NamespacedName, i); err != nil {
-		if k8serrors.IsNotFound(err) {
+		if k8sErrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
