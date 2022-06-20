@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	edpCompApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1alpha1"
+	edpCompApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1"
 
 	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 )

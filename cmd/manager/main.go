@@ -21,9 +21,9 @@ import (
 	//+kubebuilder:scaffold:imports
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1alpha1"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
 	buildInfo "github.com/epam/edp-common/pkg/config"
-	edpCompApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1alpha1"
+	edpCompApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1"
 
 	perfApiV1 "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 	perfApiV1Alpha "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
