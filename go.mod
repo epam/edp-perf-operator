@@ -1,6 +1,6 @@
 module github.com/epam/edp-perf-operator/v2
 
-go 1.17
+go 1.18
 
 replace (
 	git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
@@ -33,21 +33,14 @@ require (
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
 	github.com/Azure/go-autorest/logger v0.2.0 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
-	github.com/PuerkitoBio/purell v1.1.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/emicklei/go-restful v2.12.0+incompatible // indirect
 	github.com/epam/edp-jenkins-operator/v2 v2.3.0-130.0.20220615130453-41c49930569c // indirect
 	github.com/evanphx/json-patch v4.9.0+incompatible // indirect
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-logr/zapr v0.2.0 // indirect
-	github.com/go-openapi/jsonpointer v0.19.3 // indirect
-	github.com/go-openapi/jsonreference v0.19.3 // indirect
-	github.com/go-openapi/spec v0.19.5 // indirect
-	github.com/go-openapi/swag v0.19.5 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
@@ -58,7 +51,6 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/mailru/easyjson v0.7.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
