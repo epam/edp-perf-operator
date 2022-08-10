@@ -25,8 +25,8 @@ A Helm chart for EDP Perf Operator
 | annotations | object | `{}` |  |
 | global.edpName | string | `""` |  |
 | global.platform | string | `"openshift"` |  |
-| image.name | string | `"epamedp/perf-operator"` |  |
-| image.version | string | `nil` |  |
+| image.repository | string | `"epamedp/perf-operator"` |  |
+| image.tag | string | `nil` |  |
 | imagePullPolicy | string | `"IfNotPresent"` |  |
 | name | string | `"perf-operator"` |  |
 | nodeSelector | object | `{}` |  |

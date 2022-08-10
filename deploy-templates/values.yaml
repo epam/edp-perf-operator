@@ -8,9 +8,9 @@ nodeSelector: {}
 tolerations: []
 affinity: {}
 image:
-  name: epamedp/perf-operator
+  repository: epamedp/perf-operator
   # if not defined then .Chart.AppVersion is used
-  version:
+  tag:
 imagePullPolicy: "IfNotPresent"
 
 resources:
