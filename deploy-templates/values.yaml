@@ -1,15 +1,20 @@
 global:
+  # -- namespace or a project name (in case of OpenShift)
   edpName: ""
+  # -- platform type that can be "kubernetes" or "openshift"
   platform: "openshift"
 
+# -- component name
 name: perf-operator
 annotations: {}
 nodeSelector: {}
 tolerations: []
 affinity: {}
 image:
+  # -- EDP perf-operator Docker image name. The released image can be found on [Dockerhub](https://hub.docker.com/r/epamedp/perf-operator)
   repository: epamedp/perf-operator
   # if not defined then .Chart.AppVersion is used
+  # -- EDP perf-operator Docker image tag. The released image can be found on [Dockerhub](https://hub.docker.com/r/epamedp/perf-operator/tags)
   tag:
 imagePullPolicy: "IfNotPresent"
 
@@ -21,13 +26,22 @@ resources:
     memory: 64Mi
 
 perf:
+  # -- Flag to enable/disable PERF integration (e.g. true/false)
   integration: false
+  # -- PerfServer CR name
   name: "perf"
+  # -- API URL for development
   apiUrl: "https://perf.delivery.example.com"
+  # -- URL to PERF project
   rootUrl: "https://perf.delivery.example.com"
+  # -- Name of a secret with credentials to the PERF server
   credentialName: "perf-user"
+  # -- Name of a project in PERF
   projectName: "PROJECT-NAME"
   luminate:
+    # -- Flag to enable/disable Luminate integration (e.g. true/false)
     enabled: false
+    # -- API URL for development
     apiUrl: "https://api.example.luminatesec.com"
+    # -- Name of a secret with Luminate credentials
     credentialName: "luminate-secret"
