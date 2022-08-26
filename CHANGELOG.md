@@ -1,18 +1,38 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v2.12.0"></a>
+## [v2.12.0] - 2022-08-23
 ### Features
 
+- Switch to use V1 apis of EDP components [EPMDEDP-10081](https://jiraeu.epam.com/browse/EPMDEDP-10081)
+- Download required tools for Makefile targets [EPMDEDP-10105](https://jiraeu.epam.com/browse/EPMDEDP-10105)
 - Switch to V1 [EPMDEDP-9220](https://jiraeu.epam.com/browse/EPMDEDP-9220)
 
 ### Bug Fixes
 
 - PerfServer CRD metadata updated. [EPMDEDP-9515](https://jiraeu.epam.com/browse/EPMDEDP-9515)
 
+### Code Refactoring
+
+- Use repository and tag for image reference in chart [EPMDEDP-10389](https://jiraeu.epam.com/browse/EPMDEDP-10389)
+
 ### Routine
 
+- Upgrade go version to 1.18 [EPMDEDP-10110](https://jiraeu.epam.com/browse/EPMDEDP-10110)
+- Fix Jira Ticket pattern for changelog generator [EPMDEDP-10159](https://jiraeu.epam.com/browse/EPMDEDP-10159)
+- Update alpine base image to 3.16.2 version [EPMDEDP-10274](https://jiraeu.epam.com/browse/EPMDEDP-10274)
+- Update alpine base image version [EPMDEDP-10280](https://jiraeu.epam.com/browse/EPMDEDP-10280)
+- Change 'go get' to 'go install' for git-chglog [EPMDEDP-10337](https://jiraeu.epam.com/browse/EPMDEDP-10337)
+- Remove VERSION file [EPMDEDP-10387](https://jiraeu.epam.com/browse/EPMDEDP-10387)
+- Add gcflags for go build artifact [EPMDEDP-10411](https://jiraeu.epam.com/browse/EPMDEDP-10411)
 - Update current development version [EPMDEDP-8832](https://jiraeu.epam.com/browse/EPMDEDP-8832)
 - Update chart annotation [EPMDEDP-9515](https://jiraeu.epam.com/browse/EPMDEDP-9515)
+
+### Documentation
+
+- Align README.md [EPMDEDP-10274](https://jiraeu.epam.com/browse/EPMDEDP-10274)
 
 
 <a name="v2.11.0"></a>
@@ -83,7 +103,8 @@
 <a name="v2.7.0"></a>
 ## v2.7.0 - 2021-12-03
 
-[Unreleased]: https://github.com/epam/edp-perf-operator/compare/v2.11.0...HEAD
+[Unreleased]: https://github.com/epam/edp-perf-operator/compare/v2.12.0...HEAD
+[v2.12.0]: https://github.com/epam/edp-perf-operator/compare/v2.11.0...v2.12.0
 [v2.11.0]: https://github.com/epam/edp-perf-operator/compare/v2.10.0...v2.11.0
 [v2.10.0]: https://github.com/epam/edp-perf-operator/compare/v2.9.0...v2.10.0
 [v2.9.0]: https://github.com/epam/edp-perf-operator/compare/v2.8.0...v2.9.0
