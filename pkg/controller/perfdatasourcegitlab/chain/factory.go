@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -12,12 +13,12 @@ import (
 
 var log = ctrl.Log.WithName("perf_data_source_gitlab_handler")
 
-func CreateDefChain(client client.Client, scheme *runtime.Scheme, perfClient perf.PerfClient) handler.PerfDataSourceGitLabHandler {
+func CreateDefChain(c client.Client, scheme *runtime.Scheme, perfClient perf.PerfClient) handler.PerfDataSourceGitLabHandler {
 	return PutOwnerReference{
-		client: client,
+		client: c,
 		scheme: scheme,
 		next: PutDataSource{
-			client:     client,
+			client:     c,
 			perfClient: perfClient,
 		},
 	}
@@ -25,8 +26,14 @@ func CreateDefChain(client client.Client, scheme *runtime.Scheme, perfClient per
 
 func nextServeOrNil(next handler.PerfDataSourceGitLabHandler, ds *perfApi.PerfDataSourceGitLab) error {
 	if next != nil {
-		return next.ServeRequest(ds)
+		if err := next.ServeRequest(ds); err != nil {
+			return fmt.Errorf("failed to serve request: %w", err)
+		}
+
+		return nil
 	}
+
 	log.Info("handling of perf GitLab data source has been finished", "name", ds.Name)
+
 	return nil
 }

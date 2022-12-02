@@ -2,8 +2,8 @@ package chain
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/pkg/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -20,12 +20,14 @@ type CheckConnectionToPerf struct {
 
 func (h CheckConnectionToPerf) ServeRequest(server *perfApi.PerfServer) error {
 	log.Info("start checking connection to PERF", "url", server.Spec.RootUrl)
+
 	connected, err := h.perfClient.Connected()
 	if err != nil {
 		server.Status.Available = connected
-		err := errors.Wrapf(err, "couldn't connect to PERF instance with %v url", server.Spec.RootUrl)
-		server.Status.DetailedMessage = err.Error()
-		return err
+		wrapedErr := fmt.Errorf("failed to connect to PERF instance with %v url: %w", server.Spec.RootUrl, err)
+		server.Status.DetailedMessage = wrapedErr.Error()
+
+		return wrapedErr
 	}
 
 	server.Status.Available = connected
@@ -34,6 +36,7 @@ func (h CheckConnectionToPerf) ServeRequest(server *perfApi.PerfServer) error {
 	h.updateStatus(server)
 
 	log.Info("connection to PERF has been established", "url", server.Spec.RootUrl)
+
 	return nextServeOrNil(h.next, server)
 }
 

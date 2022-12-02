@@ -1,7 +1,7 @@
 package chain
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,7 +52,7 @@ func TestCheckConnectionToPerf_ShouldBeExecutedWithError(t *testing.T) {
 		perfClient: mPerfCl,
 	}
 
-	mPerfCl.On("Connected").Return(false, errors.New("failed"))
+	mPerfCl.On("Connected").Return(false, fmt.Errorf("failed"))
 
 	psr := &perfApi.PerfServer{
 		Status: perfApi.PerfServerStatus{},

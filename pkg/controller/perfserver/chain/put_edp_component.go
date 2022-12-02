@@ -4,7 +4,8 @@ import (
 	"bufio"
 	"context"
 	"encoding/base64"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"os"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -27,30 +28,35 @@ type PutEdpComponent struct {
 const (
 	perfEdpComponentType = "perf"
 	perfIconPath         = "/usr/local/configs/img/perf.svg"
+	keyName              = "name"
 )
 
 func (h PutEdpComponent) ServeRequest(server *perfApi.PerfServer) error {
-	log.Info("start creating EDP component", "name", server.Name)
+	log.Info("start creating EDP component", keyName, server.Name)
+
 	if err := h.putEdpComponent(server); err != nil {
 		return err
 	}
-	log.Info("EDP component was created", "name", server.Name)
+
+	log.Info("EDP component was created", keyName, server.Name)
+
 	return nil
 }
 
 func (h PutEdpComponent) putEdpComponent(server *perfApi.PerfServer) error {
-	comp := &edpCompApi.EDPComponent{}
-	err := h.client.Get(context.TODO(), types.NamespacedName{
+	if err := h.client.Get(context.TODO(), types.NamespacedName{
 		Name:      server.Name,
 		Namespace: server.Namespace,
-	}, comp)
-	if err != nil {
+	}, &edpCompApi.EDPComponent{}); err != nil {
 		if errors.IsNotFound(err) {
 			return h.createEdpComponent(server)
 		}
-		return err
+
+		return fmt.Errorf("failed toget client: %w", err)
 	}
-	log.Info("EDP component already exists. skip creating...", "name", server.Name)
+
+	log.Info("EDP component already exists. skip creating...", keyName, server.Name)
+
 	return nil
 }
 
@@ -73,29 +79,39 @@ func (h PutEdpComponent) createEdpComponent(server *perfApi.PerfServer) error {
 		},
 	}
 
-	if err := controllerutil.SetControllerReference(server, comp, h.scheme); err != nil {
-		return err
+	if err = controllerutil.SetControllerReference(server, comp, h.scheme); err != nil {
+		return fmt.Errorf("failed to set controller reference: %w", err)
 	}
 
-	if err := h.client.Create(context.TODO(), comp); err != nil {
-		return err
+	if err = h.client.Create(context.TODO(), comp); err != nil {
+		return fmt.Errorf("failed to create client: %w", err)
 	}
-	log.Info("EDP component has been created", "name", server.Name)
+
+	log.Info("EDP component has been created", keyName, server.Name)
+
 	return nil
 }
 
 func getIcon() (*string, error) {
 	f, err := os.Open(perfIconPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
-	defer f.Close()
+
+	defer func(f *os.File) {
+		if defErr := f.Close(); defErr != nil {
+			log.Error(defErr, "failed to close file")
+		}
+	}(f)
 
 	reader := bufio.NewReader(f)
-	content, err := ioutil.ReadAll(reader)
+
+	content, err := io.ReadAll(reader)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read content: %w", err)
 	}
+
 	encoded := base64.StdEncoding.EncodeToString(content)
+
 	return &encoded, nil
 }

@@ -15,7 +15,7 @@ func (m *MockPerfClient) Connected() (bool, error) {
 	return args.Get(0).(bool), args.Error(1)
 }
 
-func (m *MockPerfClient) GetProject(name string) (ds *dto.PerfProject, err error) {
+func (m *MockPerfClient) GetProject(_ string) (ds *dto.PerfProject, err error) {
 	// unimplemented method
 	panic("implement me")
 }

@@ -10,10 +10,6 @@ import (
 
 type DataSourceType string
 
-const (
-	Jenkins DataSourceType = "JENKINS"
-)
-
 type DataSourceCommand struct {
 	Id     int            `json:"id"`
 	Name   string         `json:"name"`
@@ -77,7 +73,7 @@ func GetSonarDsCreateCommand(ds *perfApi.PerfDataSourceSonar, username, password
 	}
 }
 
-func GetSonarDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
+func GetSonarDsUpdateCommand(dsReq *dto.DataSource, conf *DataSourceConfigDto) DataSourceCommand {
 	return DataSourceCommand{
 		Id:   dsReq.Id,
 		Name: dsReq.Name,
@@ -104,7 +100,7 @@ func GetJenkinsDsCreateCommand(ds *perfApi.PerfDataSourceJenkins, username, pass
 	}
 }
 
-func GetJenkinsDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceConfigDto) DataSourceCommand {
+func GetJenkinsDsUpdateCommand(dsReq *dto.DataSource, conf *DataSourceConfigDto) DataSourceCommand {
 	return DataSourceCommand{
 		Id:   dsReq.Id,
 		Name: dsReq.Name,
@@ -136,7 +132,7 @@ func GetGitLabDsCreateCommand(ds *perfApi.PerfDataSourceGitLab, username, passwo
 	}
 }
 
-func GetGitLabDsUpdateCommand(dsReq *dto.DataSource, conf DataSourceGitLabConfigDto) DataSourceCommand {
+func GetGitLabDsUpdateCommand(dsReq *dto.DataSource, conf *DataSourceGitLabConfigDto) DataSourceCommand {
 	return DataSourceCommand{
 		Id:   dsReq.Id,
 		Name: dsReq.Name,

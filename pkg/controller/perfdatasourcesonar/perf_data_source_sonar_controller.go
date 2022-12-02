@@ -2,11 +2,11 @@ package perfdatasourcesonar
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -23,9 +23,9 @@ import (
 	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 )
 
-func NewReconcilePerfDataSourceSonar(client client.Client, scheme *runtime.Scheme, log logr.Logger) *ReconcilePerfDataSourceSonar {
+func NewReconcilePerfDataSourceSonar(c client.Client, scheme *runtime.Scheme, log logr.Logger) *ReconcilePerfDataSourceSonar {
 	return &ReconcilePerfDataSourceSonar{
-		client: client,
+		client: c,
 		scheme: scheme,
 		log:    log.WithName("perf-data-source-sonar"),
 	}
@@ -40,20 +40,37 @@ type ReconcilePerfDataSourceSonar struct {
 func (r *ReconcilePerfDataSourceSonar) SetupWithManager(mgr ctrl.Manager) error {
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			oldPk := e.ObjectOld.(*perfApi.PerfDataSourceSonar).Spec.Config.ProjectKeys
-			newPk := e.ObjectNew.(*perfApi.PerfDataSourceSonar).Spec.Config.ProjectKeys
+			oldDataSource, ok := e.ObjectOld.(*perfApi.PerfDataSourceSonar)
+			if !ok {
+				return false
+			}
+
+			newDataSource, ok := e.ObjectNew.(*perfApi.PerfDataSourceSonar)
+			if !ok {
+				return false
+			}
+
+			oldPk := oldDataSource.Spec.Config.ProjectKeys
+			newPk := newDataSource.Spec.Config.ProjectKeys
+
 			return dataSourceUpdated(oldPk, newPk)
 		},
 	}
-	return ctrl.NewControllerManagedBy(mgr).
+
+	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&perfApi.PerfDataSourceSonar{}, builder.WithPredicates(p)).
-		Complete(r)
+		Complete(r); err != nil {
+		return fmt.Errorf("failed to create controller manager: %w", err)
+	}
+
+	return nil
 }
 
-func dataSourceUpdated(old, new []string) bool {
-	common.SortArray(old)
-	common.SortArray(new)
-	return !reflect.DeepEqual(old, new)
+func dataSourceUpdated(oldDataSource, newDataSource []string) bool {
+	common.SortArray(oldDataSource)
+	common.SortArray(newDataSource)
+
+	return !reflect.DeepEqual(oldDataSource, newDataSource)
 }
 
 func (r *ReconcilePerfDataSourceSonar) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
@@ -65,17 +82,20 @@ func (r *ReconcilePerfDataSourceSonar) Reconcile(ctx context.Context, request re
 		if k8sErrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
-		return reconcile.Result{}, err
+
+		return reconcile.Result{}, fmt.Errorf("failed to get perf data source sonar: %w", err)
 	}
+
 	defer r.updateStatus(ctx, i)
 
 	ps, err := cluster.GetPerfServerCr(r.client, i.Spec.PerfServerName, i.Namespace)
 	if err != nil {
-		return reconcile.Result{}, errors.Wrapf(err, "couldn't get %v PerfServer from cluster", i.Spec.PerfServerName)
+		return reconcile.Result{}, fmt.Errorf("failed to get %v PerfServer from cluster: %w", i.Spec.PerfServerName, err)
 	}
 
 	if !ps.Status.Available {
 		log.Info("Perf instance is unavailable. skip creating/updating data source in PERF", "name", ps.Name)
+
 		return reconcile.Result{RequeueAfter: 2 * time.Minute}, nil
 	}
 
@@ -84,11 +104,12 @@ func (r *ReconcilePerfDataSourceSonar) Reconcile(ctx context.Context, request re
 		return reconcile.Result{}, err
 	}
 
-	if err := chain.CreateDefChain(r.client, r.scheme, pc).ServeRequest(i); err != nil {
-		return reconcile.Result{}, err
+	if defChainErr := chain.CreateDefChain(r.client, r.scheme, pc).ServeRequest(i); defChainErr != nil {
+		return reconcile.Result{}, fmt.Errorf("failed to create default chain: %w", defChainErr)
 	}
 
 	log.Info("Reconciling PerfDataSourceSonar has been finished")
+
 	return reconcile.Result{}, nil
 }
 
@@ -101,12 +122,13 @@ func (r ReconcilePerfDataSourceSonar) updateStatus(ctx context.Context, ds *perf
 func (r ReconcilePerfDataSourceSonar) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {
 	credentials, err := perf.GetPerfCredentials(r.client, secretName, namespace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get perf credentials namespace - %s: %w", namespace, err)
 	}
 
 	perfClient, err := perf.NewRestClient(url, credentials.Username, credentials.Password, credentials.LuminateToken)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create rest client: %w", err)
 	}
+
 	return perfClient, nil
 }

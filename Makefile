@@ -45,6 +45,10 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object paths="./..."
 
+GOLANGCILINT = ${CURRENT_DIR}/bin/golangci-lint
+.PHONY: golangci-lint
+golangci-lint: ## Download golangci-lint locally if necessary.
+	$(call go-get-tool,$(GOLANGCILINT),github.com/golangci/golangci-lint/cmd/golangci-lint,v1.50.1)
 
 # Run tests
 test: fmt vet
@@ -56,8 +60,8 @@ fmt:  ## Run go fmt
 vet:  ## Run go vet
 	go vet ./...
 
-lint: ## Run go lint
-	exit 0
+lint: golangci-lint ## Run go lint
+	${GOLANGCILINT} run -v -c .golangci.yaml ./...
 
 .PHONY: build
 build: clean ## build operator's binary

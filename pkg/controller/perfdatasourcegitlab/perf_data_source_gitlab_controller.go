@@ -2,11 +2,11 @@ package perfdatasourcegitlab
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/pkg/errors"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -23,9 +23,9 @@ import (
 	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 )
 
-func NewReconcilePerfDataSourceGitLab(client client.Client, scheme *runtime.Scheme, log logr.Logger) *ReconcilePerfDataSourceGitLab {
+func NewReconcilePerfDataSourceGitLab(c client.Client, scheme *runtime.Scheme, log logr.Logger) *ReconcilePerfDataSourceGitLab {
 	return &ReconcilePerfDataSourceGitLab{
-		client: client,
+		client: c,
 		scheme: scheme,
 		log:    log.WithName("perf-data-source-gitlab"),
 	}
@@ -40,20 +40,37 @@ type ReconcilePerfDataSourceGitLab struct {
 func (r *ReconcilePerfDataSourceGitLab) SetupWithManager(mgr ctrl.Manager) error {
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			oldPds := e.ObjectOld.(*perfApi.PerfDataSourceGitLab).Spec.Config.Branches
-			newPds := e.ObjectNew.(*perfApi.PerfDataSourceGitLab).Spec.Config.Branches
+			oldDataSource, ok := e.ObjectOld.(*perfApi.PerfDataSourceGitLab)
+			if !ok {
+				return false
+			}
+
+			newDataSource, ok := e.ObjectNew.(*perfApi.PerfDataSourceGitLab)
+			if !ok {
+				return false
+			}
+
+			oldPds := oldDataSource.Spec.Config.Branches
+			newPds := newDataSource.Spec.Config.Branches
+
 			return dataSourceUpdated(oldPds, newPds)
 		},
 	}
-	return ctrl.NewControllerManagedBy(mgr).
+
+	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&perfApi.PerfDataSourceGitLab{}, builder.WithPredicates(p)).
-		Complete(r)
+		Complete(r); err != nil {
+		return fmt.Errorf("failed to build controller manager: %w", err)
+	}
+
+	return nil
 }
 
-func dataSourceUpdated(old, new []string) bool {
-	common.SortArray(old)
-	common.SortArray(new)
-	return !reflect.DeepEqual(old, new)
+func dataSourceUpdated(oldDataSource, newDataSource []string) bool {
+	common.SortArray(oldDataSource)
+	common.SortArray(newDataSource)
+
+	return !reflect.DeepEqual(oldDataSource, newDataSource)
 }
 
 func (r *ReconcilePerfDataSourceGitLab) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
@@ -65,13 +82,15 @@ func (r *ReconcilePerfDataSourceGitLab) Reconcile(ctx context.Context, request r
 		if k8sErrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
-		return reconcile.Result{}, err
+
+		return reconcile.Result{}, fmt.Errorf("failed to get perf data source gitLab %s: %w", request.Namespace, err)
 	}
+
 	defer r.updateStatus(ctx, i)
 
 	ps, err := cluster.GetPerfServerCr(r.client, i.Spec.PerfServerName, i.Namespace)
 	if err != nil {
-		return reconcile.Result{}, errors.Wrapf(err, "couldn't get %v PerfServer from cluster", i.Spec.PerfServerName)
+		return reconcile.Result{}, fmt.Errorf("failed to get %v PerfServer from cluster: %w", i.Spec.PerfServerName, err)
 	}
 
 	if !ps.Status.Available {
@@ -84,11 +103,12 @@ func (r *ReconcilePerfDataSourceGitLab) Reconcile(ctx context.Context, request r
 		return reconcile.Result{}, err
 	}
 
-	if err := chain.CreateDefChain(r.client, r.scheme, pc).ServeRequest(i); err != nil {
-		return reconcile.Result{}, err
+	if err = chain.CreateDefChain(r.client, r.scheme, pc).ServeRequest(i); err != nil {
+		return reconcile.Result{}, fmt.Errorf("failed to create default chain: %w", err)
 	}
 
 	log.Info("Reconciling PerfDataSourceGitLab has been finished")
+
 	return reconcile.Result{}, nil
 }
 
@@ -101,12 +121,13 @@ func (r ReconcilePerfDataSourceGitLab) updateStatus(ctx context.Context, ds *per
 func (r ReconcilePerfDataSourceGitLab) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {
 	credentials, err := perf.GetPerfCredentials(r.client, secretName, namespace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get perf credentials: %w", err)
 	}
 
 	perfClient, err := perf.NewRestClient(url, credentials.Username, credentials.Password, credentials.LuminateToken)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create perf client: %w", err)
 	}
+
 	return perfClient, nil
 }

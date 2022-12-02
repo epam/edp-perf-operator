@@ -1,7 +1,7 @@
 package chain
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,6 +24,7 @@ const (
 	gitlabDsType = "GITLAB"
 )
 
+// nolint
 func init() {
 	utilruntime.Must(perfApi.AddToScheme(scheme.Scheme))
 	utilruntime.Must(codebaseApi.AddToScheme(scheme.Scheme))
@@ -285,7 +286,7 @@ func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
 		perfClient: mPerfCl,
 	}
 
-	mPerfCl.On("GetProjectDataSource", fakeName, "").Return(nil, errors.New("failed"))
+	mPerfCl.On("GetProjectDataSource", fakeName, "").Return(nil, fmt.Errorf("failed"))
 
 	pds := &perfApi.PerfDataSourceGitLab{
 		ObjectMeta: v1.ObjectMeta{
@@ -380,7 +381,7 @@ func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
 		},
 	}).Return(nil)
 
-	mPerfCl.On("ActivateDataSource", fakeName, 0).Return(errors.New("failed"))
+	mPerfCl.On("ActivateDataSource", fakeName, 0).Return(fmt.Errorf("failed"))
 
 	assert.Error(t, ch.ServeRequest(pds))
 	assert.Equal(t, "error", pds.Status.Status)

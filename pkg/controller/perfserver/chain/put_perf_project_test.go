@@ -1,7 +1,7 @@
 package chain
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -50,7 +50,7 @@ func TestPutPerfProject_ThrowErrorDuringProjectExistsCall(t *testing.T) {
 		perfClient: mPerfCl,
 	}
 
-	mPerfCl.On("ProjectExists", fakeName).Return(false, errors.New("failed"))
+	mPerfCl.On("ProjectExists", fakeName).Return(false, fmt.Errorf("failed"))
 
 	psr := &perfApi.PerfServer{
 		Spec: perfApi.PerfServerSpec{

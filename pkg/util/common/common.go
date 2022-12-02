@@ -13,10 +13,21 @@ func SortArray(array []string) {
 }
 
 func ConvertToStringArray(conf interface{}) []string {
-	aInterface := conf.([]interface{})
-	aString := make([]string, len(aInterface))
-	for i, v := range aInterface {
-		aString[i] = v.(string)
+	aInterface, ok := conf.([]interface{})
+	if !ok {
+		return []string{}
 	}
+
+	aString := make([]string, len(aInterface))
+
+	for i, v := range aInterface {
+		str, strOk := v.(string)
+		if !strOk {
+			continue
+		}
+
+		aString[i] = str
+	}
+
 	return aString
 }

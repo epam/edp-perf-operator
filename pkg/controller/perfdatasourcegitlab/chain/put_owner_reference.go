@@ -2,8 +2,8 @@ package chain
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -22,32 +22,37 @@ type PutOwnerReference struct {
 
 func (h PutOwnerReference) ServeRequest(ds *perfApi.PerfDataSourceGitLab) error {
 	log.Info("put owner reference for GitLab data source", "name", ds.Name)
+
 	if err := h.setPerfOwnerRef(ds); err != nil {
 		return err
 	}
+
 	log.Info("owner ref for perf GitLab data source has been added", "name", ds.Name)
+
 	return nextServeOrNil(h.next, ds)
 }
 
 func (h PutOwnerReference) setPerfOwnerRef(ds *perfApi.PerfDataSourceGitLab) error {
 	log.Info("try to set owner ref for perf GitLab data source", "name", ds.Name)
+
 	if ow := cluster.GetOwnerReference(consts.CodebaseKind, ds.GetOwnerReferences()); ow != nil {
-		log.Info("PerfDataSourceGitLab already has owner ref",
-			"data source", ds.Name, "owner name", ow.Name)
+		log.Info("PerfDataSourceGitLab already has owner ref", "data source", ds.Name, "owner name", ow.Name)
+
 		return nil
 	}
 
 	c, err := cluster.GetCodebase(h.client, ds.Spec.CodebaseName, ds.Namespace)
 	if err != nil {
-		return errors.Wrapf(err, "couldn't get %v Codebase from cluster", ds.Spec.CodebaseName)
+		return fmt.Errorf("failed to get %v Codebase from cluster: %w", ds.Spec.CodebaseName, err)
 	}
 
-	if err := controllerutil.SetControllerReference(c, ds, h.scheme); err != nil {
-		return errors.Wrapf(err, "couldn't set owner ref for %v PerfDataSourceGitLab", ds.Name)
+	if err = controllerutil.SetControllerReference(c, ds, h.scheme); err != nil {
+		return fmt.Errorf("failed to set owner ref for %v PerfDataSourceGitLab: %w", ds.Name, err)
 	}
 
-	if err := h.client.Update(context.TODO(), ds); err != nil {
-		return errors.Wrapf(err, "an error has been occurred while updating perf GitLab data source's owner %v", ds.Name)
+	if err = h.client.Update(context.TODO(), ds); err != nil {
+		return fmt.Errorf("an error has been occurred while updating perf GitLab data source's owner %v: %w", ds.Name, err)
 	}
+
 	return nil
 }

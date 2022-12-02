@@ -1,16 +1,24 @@
 package perf
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"gopkg.in/resty.v1"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/epam/edp-perf-operator/v2/pkg/client/luminate"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
-	"github.com/pkg/errors"
-	"gopkg.in/resty.v1"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strconv"
-	"strings"
+)
+
+const (
+	keyID                = "id"
+	keyContentType       = "Content-Type"
+	valueApplicationJson = "application/json"
 )
 
 type PerfClient interface {
@@ -44,33 +52,35 @@ func NewRestClient(url, user, pwd, lumToken string) (*PerfClientAdapter, error) 
 		SetHostURL(url).
 		SetHeader("lum-api-token", lumToken).
 		SetAuthToken(token)
+
 	rl.Info("Perf REST client successfully has been created.")
+
 	return &PerfClientAdapter{
 		client: *cl,
 	}, err
 }
 
-func GetPerfCredentials(client client.Client, secretName, namespace string) (*dto.PerfCredentials, error) {
-	cm, err := cluster.GetConfigMap(client, luminatesecConfigMapName, namespace)
+func GetPerfCredentials(c client.Client, secretName, namespace string) (*dto.PerfCredentials, error) {
+	cm, err := cluster.GetConfigMap(c, luminatesecConfigMapName, namespace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get config map: %w", err)
 	}
 
 	lumClient := luminate.NewLuminateRestClient(cm.Data["apiUrl"])
 
-	lumSecret, err := cluster.GetSecret(client, cm.Data["credentialName"], namespace)
+	lumSecret, err := cluster.GetSecret(c, cm.Data["credentialName"], namespace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get secret: %w", err)
 	}
 
 	lumToken, err := lumClient.GetApiToken(string(lumSecret.Data["username"]), string(lumSecret.Data["password"]))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
 
-	s, err := cluster.GetSecret(client, secretName, namespace)
+	s, err := cluster.GetSecret(c, secretName, namespace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get secret: %w", err)
 	}
 
 	return &dto.PerfCredentials{
@@ -83,7 +93,7 @@ func GetPerfCredentials(client client.Client, secretName, namespace string) (*dt
 func getAuthorizationToken(url, user, pwd, lumApiToken string) (string, error) {
 	resp, err := resty.R().
 		SetHeaders(map[string]string{
-			"Content-Type":  "application/x-www-form-urlencoded",
+			keyContentType:  "application/x-www-form-urlencoded",
 			"accept":        "text/plain",
 			"lum-api-token": lumApiToken,
 		}).
@@ -93,38 +103,44 @@ func getAuthorizationToken(url, user, pwd, lumApiToken string) (string, error) {
 			"useExternalSSO": "false", // weird behaviour. at this moment should be false despite of using lumApiToken
 		}).Post(url + "/api/v2/sso/token")
 	if err != nil {
-		return "", errors.Wrap(err, "couldn't get PERF token for %v user.")
+		return "", fmt.Errorf("failed to get PERF token for %v user: %w", user, err)
 	}
+
 	if resp.IsError() {
-		return "", errors.Errorf("couldn't get PERF token for %v user. Status - %v", user, resp.StatusCode())
+		return "", fmt.Errorf("failed to get PERF token for %v user. Status - %v: %w", user, resp.StatusCode(), err)
 	}
+
 	return resp.String(), nil
 }
 
-func (c PerfClientAdapter) Connected() (bool, error) {
+func (c *PerfClientAdapter) Connected() (bool, error) {
 	log.Info("start checking connection to PERF", "url", c.client.HostURL)
+
 	_, err := c.getProjects()
 	if err != nil {
-		return false, errors.Wrapf(err, "couldn't establish connection with PERF %v", c.client.HostURL)
+		return false, fmt.Errorf("failed to establish connection with PERF %v: %w", c.client.HostURL, err)
 	}
+
 	log.Info("connection to PERF was established.", "url", c.client.HostURL)
+
 	return true, nil
 }
 
-func (c PerfClientAdapter) GetProject(name string) (ds *dto.PerfProject, err error) {
+func (c *PerfClientAdapter) GetProject(name string) (ds *dto.PerfProject, err error) {
 	projects, err := c.getProjects()
 	if err != nil {
 		return nil, err
 	}
 
 	var (
-		node     *dto.PerfProject
+		node     dto.PerfProject
 		findNode func(projects []dto.PerfProject, name string)
 	)
+
 	findNode = func(projects []dto.PerfProject, name string) {
 		for _, child := range projects {
 			if strings.EqualFold(child.Name, name) {
-				node = &child
+				node = child
 				break
 			}
 
@@ -133,46 +149,54 @@ func (c PerfClientAdapter) GetProject(name string) (ds *dto.PerfProject, err err
 	}
 	findNode(projects, name)
 
-	return node, nil
+	return &node, nil
 }
 
-func (c PerfClientAdapter) ProjectExists(name string) (bool, error) {
+func (c *PerfClientAdapter) ProjectExists(name string) (bool, error) {
 	log.Info("start checking project for existence", "name", name)
+
 	project, err := c.GetProject(name)
 	if err != nil {
 		return false, err
 	}
+
 	return project != nil, nil
 }
 
-func (c PerfClientAdapter) getProjects() ([]dto.PerfProject, error) {
+func (c *PerfClientAdapter) getProjects() ([]dto.PerfProject, error) {
 	var pp []dto.PerfProject
+
 	resp, err := c.client.R().
-		SetHeader("Content-Type", "application/json").
+		SetHeader(keyContentType, valueApplicationJson).
 		SetResult(&pp).
 		Get("/api/v2/nodes")
 	if err != nil {
-		return nil, errors.Wrap(err, "couldn't get projects from PERF")
+		return nil, fmt.Errorf("failed to get projects from PERF: %w", err)
 	}
+
 	if resp.IsError() {
-		return nil, errors.Errorf("couldn't get projects from PERF. Status - %v", resp.StatusCode())
+		return nil, fmt.Errorf("failed to get projects from PERF. Status - %v: %w", resp.StatusCode(), err)
 	}
+
 	return pp, nil
 }
 
-func (c PerfClientAdapter) GetProjectDataSource(projectName, dsType string) (*dto.DataSource, error) {
+func (c *PerfClientAdapter) GetProjectDataSource(projectName, dsType string) (*dto.DataSource, error) {
 	rlog := log.WithValues("projectName", projectName, "dsType", dsType)
 	rlog.Info("start retrieving PERF datasource")
+
 	project, err := c.GetProject(projectName)
 	if err != nil {
 		return nil, err
 	}
+
 	if project == nil {
-		return nil, errors.Errorf("PERF project %v wasn't found", projectName)
+		return nil, fmt.Errorf("failed to find PERF project %v: %w", projectName, err)
 	}
 
 	if !project.HasDataSource {
 		rlog.Info("there're no datasources.")
+
 		return nil, nil
 	}
 
@@ -182,99 +206,116 @@ func (c PerfClientAdapter) GetProjectDataSource(projectName, dsType string) (*dt
 	}
 
 	for _, ds := range dss {
-		if ds.Type == strings.ToUpper(dsType) {
+		if strings.EqualFold(ds.Type, dsType) {
 			rlog.Info("datasource has been found in PERF.")
 			return &ds, nil
 		}
 	}
+
 	rlog.Info("datasource has not been found in PERF.")
+
 	return nil, nil
 }
 
-func (c PerfClientAdapter) getProjectDataSources(projectId int) ([]dto.DataSource, error) {
+func (c *PerfClientAdapter) getProjectDataSources(projectId int) ([]dto.DataSource, error) {
 	var ds []dto.DataSource
+
 	resp, err := c.client.R().
-		SetHeader("Content-Type", "application/json").
+		SetHeader(keyContentType, valueApplicationJson).
 		SetResult(&ds).
 		SetPathParams(map[string]string{
-			"id": strconv.Itoa(projectId),
+			keyID: strconv.Itoa(projectId),
 		}).
 		Get("/api/v2/nodes/{id}/datasets/datasources")
 	if err != nil {
-		return nil, errors.Wrapf(err, "couldn't get datasources for %v project", projectId)
+		return nil, fmt.Errorf("failed to get datasources for %v project: %w", projectId, err)
 	}
+
 	if resp.IsError() {
-		return nil, errors.Errorf("couldn't get datasources %v project. Status - %v", projectId, resp.StatusCode())
+		return nil, fmt.Errorf("failed to get datasources %v project. Status - %v: %w",
+			projectId, resp.StatusCode(), err)
 	}
+
 	return ds, nil
 }
 
-func (c PerfClientAdapter) CreateDataSource(projectName string, command command.DataSourceCommand) error {
-	rlog := log.WithValues("project name", projectName, "datasource name", command.Name)
+func (c *PerfClientAdapter) CreateDataSource(projectName string, dsc command.DataSourceCommand) error {
+	rlog := log.WithValues("project name", projectName, "datasource name", dsc.Name)
 	rlog.Info("start creating datasource under project")
+
 	project, err := c.GetProject(projectName)
 	if err != nil {
 		return err
 	}
+
 	if project == nil {
-		return errors.Errorf("PERF project %v wasn't found", projectName)
+		return fmt.Errorf("PERF project %v wasn't found", projectName)
 	}
 
 	resp, err := c.client.R().
-		SetHeader("Content-Type", "application/json").
+		SetHeader(keyContentType, valueApplicationJson).
 		SetPathParams(map[string]string{
-			"id": strconv.Itoa(project.Id),
+			keyID: strconv.Itoa(project.Id),
 		}).
-		SetBody(command).
+		SetBody(dsc).
 		Post("/api/v2/datasources/node/{id}")
 	if err != nil {
-		return errors.Wrapf(err, "couldn't create %v datasource under %v project", command.Name, projectName)
+		return fmt.Errorf("failed to create %v datasource under %v project: %w", dsc.Name, projectName, err)
 	}
+
 	if resp.IsError() {
-		return errors.Errorf("couldn't create %v datasource under %v project. Status - %v",
-			command.Name, projectName, resp.StatusCode())
+		return fmt.Errorf("failed to create %v datasource under %v project. Status - %v: %w",
+			dsc.Name, projectName, resp.StatusCode(), err)
 	}
 
 	rlog.Info("datasource has been created.")
+
 	return nil
 }
 
-func (c PerfClientAdapter) ActivateDataSource(projectName string, dataSourceId int) error {
+func (c *PerfClientAdapter) ActivateDataSource(projectName string, dataSourceId int) error {
 	rlog := log.WithValues("project name", projectName, "datasource id", dataSourceId)
 	rlog.Info("try to activate data source")
 
 	resp, err := c.client.R().
-		SetHeader("Content-Type", "application/json").
+		SetHeader(keyContentType, valueApplicationJson).
 		SetPathParams(map[string]string{
-			"id": strconv.Itoa(dataSourceId),
+			keyID: strconv.Itoa(dataSourceId),
 		}).
 		Put("/api/v2/datasources/{id}/activation")
 	if err != nil {
-		return errors.Wrapf(err, "couldn't activate %v datasource under %v project", dataSourceId, projectName)
+		return fmt.Errorf("failed to activate %v datasource under %v project: %w", dataSourceId, projectName, err)
 	}
+
 	if resp.IsError() {
-		return errors.Errorf("couldn't activate %v datasource under %v project. Status - %v",
-			dataSourceId, projectName, resp.StatusCode())
+		return fmt.Errorf("failed to activate %v datasource under %v project. Status - %v: %w",
+			dataSourceId, projectName, resp.StatusCode(), err)
 	}
+
 	rlog.Info("data source has been activated")
+
 	return nil
 }
 
-func (c PerfClientAdapter) UpdateDataSource(command command.DataSourceCommand) error {
-	log.Info("start updating PERF datasource", "name", command.Name)
+func (c *PerfClientAdapter) UpdateDataSource(dsc command.DataSourceCommand) error {
+	log.Info("start updating PERF datasource", "name", dsc.Name)
+
 	resp, err := c.client.R().
-		SetHeader("Content-Type", "application/json").
+		SetHeader(keyContentType, valueApplicationJson).
 		SetPathParams(map[string]string{
-			"id": strconv.Itoa(command.Id),
+			keyID: strconv.Itoa(dsc.Id),
 		}).
-		SetBody(command).
+		SetBody(dsc).
 		Put("/api/v2/datasources/{id}")
 	if err != nil {
-		return errors.Wrapf(err, "couldn't update %v datasource", command.Name)
+		return fmt.Errorf("failed to update %v datasource: %w", dsc.Name, err)
 	}
+
 	if resp.IsError() {
-		return errors.Errorf("couldn't update %v datasource. Status - %v", command.Name, resp.StatusCode())
+		return fmt.Errorf("failed to update %v datasource. Status - %v: %w", dsc.Name, resp.StatusCode(), err)
 	}
-	log.Info("PERF datasource has been update.", "name", command.Name)
+
+	log.Info("PERF datasource has been update.", "name", dsc.Name)
+
 	return nil
 }

@@ -2,6 +2,7 @@ package perfserver
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -20,9 +21,13 @@ import (
 	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfserver/chain"
 )
 
-func NewReconcilePerfServer(client client.Client, scheme *runtime.Scheme, log logr.Logger) *ReconcilePerfServer {
+const (
+	duration5Minutes = 5 * time.Minute
+)
+
+func NewReconcilePerfServer(c client.Client, scheme *runtime.Scheme, log logr.Logger) *ReconcilePerfServer {
 	return &ReconcilePerfServer{
-		client: client,
+		client: c,
 		scheme: scheme,
 		log:    log.WithName("perf-server"),
 	}
@@ -37,14 +42,27 @@ type ReconcilePerfServer struct {
 func (r *ReconcilePerfServer) SetupWithManager(mgr ctrl.Manager) error {
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			oldObject := e.ObjectOld.(*perfApi.PerfServer)
-			newObject := e.ObjectNew.(*perfApi.PerfServer)
+			oldObject, ok := e.ObjectOld.(*perfApi.PerfServer)
+			if !ok {
+				return false
+			}
+
+			newObject, ok := e.ObjectNew.(*perfApi.PerfServer)
+			if !ok {
+				return false
+			}
+
 			return oldObject.Spec != newObject.Spec
 		},
 	}
-	return ctrl.NewControllerManagedBy(mgr).
+
+	if err := ctrl.NewControllerManagedBy(mgr).
 		For(&perfApi.PerfServer{}, builder.WithPredicates(p)).
-		Complete(r)
+		Complete(r); err != nil {
+		return fmt.Errorf("failed to build controller: %w", err)
+	}
+
+	return nil
 }
 
 func (r *ReconcilePerfServer) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
@@ -56,8 +74,10 @@ func (r *ReconcilePerfServer) Reconcile(ctx context.Context, request reconcile.R
 		if k8sErrors.IsNotFound(err) {
 			return reconcile.Result{}, nil
 		}
-		return reconcile.Result{}, err
+
+		return reconcile.Result{}, fmt.Errorf("failed to get perf server: %w", err)
 	}
+
 	defer r.updateStatus(ctx, i)
 
 	pc, err := r.newPerfRestClient(i.Spec.ApiUrl, i.Spec.CredentialName, i.Namespace)
@@ -65,13 +85,15 @@ func (r *ReconcilePerfServer) Reconcile(ctx context.Context, request reconcile.R
 		return reconcile.Result{}, err
 	}
 
-	if err := chain.CreateDefChain(r.client, r.scheme, pc).ServeRequest(i); err != nil {
+	if err = chain.CreateDefChain(r.client, r.scheme, pc).ServeRequest(i); err != nil {
 		i.Status.DetailedMessage = err.Error()
 		log.Error(err, "couldn't handle PERF server CR")
-		return reconcile.Result{RequeueAfter: 5 * time.Minute}, nil
+
+		return reconcile.Result{RequeueAfter: duration5Minutes}, nil
 	}
 
 	log.Info("Reconciling PerfServer has been finished")
+
 	return reconcile.Result{}, nil
 }
 
@@ -85,12 +107,13 @@ func (r ReconcilePerfServer) updateStatus(ctx context.Context, server *perfApi.P
 func (r ReconcilePerfServer) newPerfRestClient(url, secretName, namespace string) (*perf.PerfClientAdapter, error) {
 	credentials, err := perf.GetPerfCredentials(r.client, secretName, namespace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get perf credentials: %w", err)
 	}
 
 	perfClient, err := perf.NewRestClient(url, credentials.Username, credentials.Password, credentials.LuminateToken)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create client: %w", err)
 	}
+
 	return perfClient, nil
 }

@@ -4,27 +4,24 @@ import (
 	"flag"
 	"os"
 
-	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/client-go/rest"
-
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
 	//+kubebuilder:scaffold:imports
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
 	buildInfo "github.com/epam/edp-common/pkg/config"
 	edpCompApi "github.com/epam/edp-component-operator/pkg/apis/v1/v1"
-
 	perfApiV1 "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 	perfApiV1Alpha "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1alpha1"
 	"github.com/epam/edp-perf-operator/v2/pkg/controller/perfdatasourcegitlab"
@@ -39,19 +36,12 @@ var (
 	setupLog = ctrl.Log.WithName("setup")
 )
 
-const perfOperatorLock = "edp-perf-operator-lock"
-
-func init() {
-	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
-	utilruntime.Must(perfApiV1Alpha.AddToScheme(scheme))
-
-	utilruntime.Must(perfApiV1.AddToScheme(scheme))
-
-	utilruntime.Must(codebaseApi.AddToScheme(scheme))
-
-	utilruntime.Must(edpCompApi.AddToScheme(scheme))
-}
+const (
+	perfOperatorLock               = "edp-perf-operator-lock"
+	errMsgUnableToCreateController = "unable to create controller"
+	keyAndValueController          = "controller"
+	managerPort                    = 9443
+)
 
 func main() {
 	var (
@@ -78,6 +68,12 @@ func main() {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
+	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(perfApiV1Alpha.AddToScheme(scheme))
+	utilruntime.Must(perfApiV1.AddToScheme(scheme))
+	utilruntime.Must(codebaseApi.AddToScheme(scheme))
+	utilruntime.Must(edpCompApi.AddToScheme(scheme))
+
 	v := buildInfo.Get()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
@@ -99,11 +95,12 @@ func main() {
 	}
 
 	cfg := ctrl.GetConfigOrDie()
+
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
 		HealthProbeBindAddress: probeAddr,
-		Port:                   9443,
+		Port:                   managerPort,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       perfOperatorLock,
 		MapperProvider: func(c *rest.Config) (meta.RESTMapper, error) {
@@ -120,25 +117,25 @@ func main() {
 
 	pdsgCtrl := perfdatasourcegitlab.NewReconcilePerfDataSourceGitLab(mgr.GetClient(), mgr.GetScheme(), ctrlLog)
 	if err := pdsgCtrl.SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "perf-data-source-gitlab")
+		setupLog.Error(err, errMsgUnableToCreateController, keyAndValueController, "perf-data-source-gitlab")
 		os.Exit(1)
 	}
 
 	pdsjCtrl := perfdatasourcejenkins.NewReconcilePerfDataSourceJenkins(mgr.GetClient(), mgr.GetScheme(), ctrlLog)
 	if err := pdsjCtrl.SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "perf-data-source-jenkins")
+		setupLog.Error(err, errMsgUnableToCreateController, keyAndValueController, "perf-data-source-jenkins")
 		os.Exit(1)
 	}
 
 	pdssCtrl := perfdatasourcesonar.NewReconcilePerfDataSourceSonar(mgr.GetClient(), mgr.GetScheme(), ctrlLog)
 	if err := pdssCtrl.SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "perf-data-source-sonar")
+		setupLog.Error(err, errMsgUnableToCreateController, keyAndValueController, "perf-data-source-sonar")
 		os.Exit(1)
 	}
 
 	psCtrl := perfserver.NewReconcilePerfServer(mgr.GetClient(), mgr.GetScheme(), ctrlLog)
 	if err := psCtrl.SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "perf-server")
+		setupLog.Error(err, errMsgUnableToCreateController, keyAndValueController, "perf-server")
 		os.Exit(1)
 	}
 
@@ -153,6 +150,7 @@ func main() {
 	}
 
 	setupLog.Info("starting manager")
+
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)

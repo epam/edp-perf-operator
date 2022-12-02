@@ -1,6 +1,8 @@
 package chain
 
 import (
+	"fmt"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
@@ -19,16 +21,22 @@ type PutDataSource struct {
 
 const (
 	gitLabSecretName = "gitlab-admin-password"
+	keyName          = "name"
 )
 
 func (h PutDataSource) ServeRequest(dataSource *perfApi.PerfDataSourceGitLab) error {
-	log.Info("start creating/updating GitLab data source in PERF", "name", dataSource.Name)
+	log.Info("start creating/updating GitLab data source in PERF", keyName, dataSource.Name)
+
 	if err := h.tryToPutDataSource(dataSource); err != nil {
 		setFailedStatus(dataSource)
+
 		return err
 	}
+
 	setSuccessStatus(dataSource)
-	log.Info("PERF DataSourceGitLab has been created.", "name", dataSource.Name)
+
+	log.Info("PERF DataSourceGitLab has been created.", keyName, dataSource.Name)
+
 	return nil
 }
 
@@ -43,19 +51,21 @@ func setSuccessStatus(ds *perfApi.PerfDataSourceGitLab) {
 func (h PutDataSource) tryToPutDataSource(dsResource *perfApi.PerfDataSourceGitLab) error {
 	ps, err := cluster.GetPerfServerCr(h.client, dsResource.Spec.PerfServerName, dsResource.Namespace)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get perf server: %w", err)
 	}
 
 	dsReq, err := h.perfClient.GetProjectDataSource(ps.Spec.ProjectName, dsResource.Spec.Type)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get project data source: %w", err)
 	}
 
 	if dsReq != nil {
 		log.Info("PERF GitLab data source already exists. try to update.", "type", dsResource.Spec.Type)
-		if err := h.tryToActivateDataSource(dsReq, ps); err != nil {
-			return err
+
+		if activateErr := h.tryToActivateDataSource(dsReq, ps); activateErr != nil {
+			return activateErr
 		}
+
 		return h.tryToUpdateDataSource(dsResource, dsReq)
 	}
 
@@ -64,26 +74,34 @@ func (h PutDataSource) tryToPutDataSource(dsResource *perfApi.PerfDataSourceGitL
 
 func (h PutDataSource) tryToActivateDataSource(dsReq *dto.DataSource, ps *perfApi.PerfServer) error {
 	if dsReq.Active {
-		log.Info("PERF data source is already activated.", "name", dsReq.Name)
+		log.Info("PERF data source is already activated.", keyName, dsReq.Name)
+
 		return nil
 	}
-	return h.perfClient.ActivateDataSource(ps.Spec.ProjectName, dsReq.Id)
+
+	if err := h.perfClient.ActivateDataSource(ps.Spec.ProjectName, dsReq.Id); err != nil {
+		return fmt.Errorf("failed to activate data source: %w", err)
+	}
+
+	return nil
 }
 
 func (h PutDataSource) tryToUpdateDataSource(dsResource *perfApi.PerfDataSourceGitLab, dsReq *dto.DataSource) error {
 	branchDiff := getBranchConfigDifference(dsResource, dsReq)
 	repoDiff := getRepositoryConfigDifference(dsResource, dsReq)
+
 	if branchDiff == nil && repoDiff == nil {
-		log.Info("nothing to update in GitLab data source", "name", dsReq.Name)
+		log.Info("nothing to update in GitLab data source", keyName, dsReq.Name)
+
 		return nil
 	}
 
 	s, err := cluster.GetSecret(h.client, gitLabSecretName, dsResource.Namespace)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get secret: %w", err)
 	}
 
-	dsCommand := command.GetGitLabDsUpdateCommand(dsReq, command.DataSourceGitLabConfigDto{
+	dsCommand := command.GetGitLabDsUpdateCommand(dsReq, &command.DataSourceGitLabConfigDto{
 		Type:         dsReq.Type,
 		ApiUrl:       dsResource.Spec.Config.Url,
 		Username:     string(s.Data["username"]),
@@ -91,25 +109,36 @@ func (h PutDataSource) tryToUpdateDataSource(dsResource *perfApi.PerfDataSourceG
 		Repositories: repoDiff,
 		Branches:     branchDiff,
 	})
-	return h.perfClient.UpdateDataSource(dsCommand)
+
+	if err = h.perfClient.UpdateDataSource(dsCommand); err != nil {
+		return fmt.Errorf("failed to update data source: %w", err)
+	}
+
+	return nil
 }
 
 func getBranchConfigDifference(dsResource *perfApi.PerfDataSourceGitLab, dsReq *dto.DataSource) []string {
 	conf := common.ConvertToStringArray(dsReq.Config["branches"])
+
 	return datasource.GetMissingElementsInDataSource(dsResource.Spec.Config.Branches, conf)
 }
 
 func getRepositoryConfigDifference(dsResource *perfApi.PerfDataSourceGitLab, dsReq *dto.DataSource) []string {
 	conf := common.ConvertToStringArray(dsReq.Config["repositories"])
+
 	return datasource.GetMissingElementsInDataSource(dsResource.Spec.Config.Repositories, conf)
 }
 
 func (h PutDataSource) createDataSource(projectName string, dsResource *perfApi.PerfDataSourceGitLab) error {
 	s, err := cluster.GetSecret(h.client, gitLabSecretName, dsResource.Namespace)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get secret: %w", err)
 	}
 
 	dsCommand := command.GetGitLabDsCreateCommand(dsResource, string(s.Data["username"]), string(s.Data["password"]))
-	return h.perfClient.CreateDataSource(projectName, dsCommand)
+	if err = h.perfClient.CreateDataSource(projectName, dsCommand); err != nil {
+		return fmt.Errorf("failed to create data source: %w", err)
+	}
+
+	return nil
 }

@@ -7,13 +7,11 @@ import (
 	"strconv"
 
 	coreV1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
-
 	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
 )
 
@@ -23,15 +21,16 @@ const (
 	inClusterNamespacePath = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
 
-func GetSecret(client client.Client, name, namespace string) (*coreV1.Secret, error) {
+func GetSecret(c client.Client, name, namespace string) (*coreV1.Secret, error) {
 	s := &coreV1.Secret{}
-	err := client.Get(context.TODO(), types.NamespacedName{
+
+	if err := c.Get(context.TODO(), types.NamespacedName{
 		Name:      name,
 		Namespace: namespace,
-	}, s)
-	if err != nil {
-		return nil, err
+	}, s); err != nil {
+		return nil, fmt.Errorf("failed to get secret: %w", err)
 	}
+
 	return s, nil
 }
 
@@ -39,11 +38,13 @@ func GetOwnerReference(ownerKind string, ors []metaV1.OwnerReference) *metaV1.Ow
 	if len(ors) == 0 {
 		return nil
 	}
+
 	for _, o := range ors {
 		if o.Kind == ownerKind {
 			return &o
 		}
 	}
+
 	return nil
 }
 
@@ -53,31 +54,34 @@ func GetPerfServerCr(c client.Client, name, namespace string) (*perfApi.PerfServ
 		Namespace: namespace,
 		Name:      name,
 	}, ps); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get client: %w", err)
 	}
+
 	return ps, nil
 }
 
-func GetConfigMap(client client.Client, name, namespace string) (*v1.ConfigMap, error) {
-	cm := &v1.ConfigMap{}
-	err := client.Get(context.TODO(), types.NamespacedName{
+func GetConfigMap(c client.Client, name, namespace string) (*coreV1.ConfigMap, error) {
+	cm := &coreV1.ConfigMap{}
+
+	if err := c.Get(context.TODO(), types.NamespacedName{
 		Name:      name,
 		Namespace: namespace,
-	}, cm)
-	if err != nil {
-		return nil, err
+	}, cm); err != nil {
+		return nil, fmt.Errorf("failed to get client: %w", err)
 	}
+
 	return cm, nil
 }
 
-func GetCodebase(client client.Client, name, namespace string) (*codebaseApi.Codebase, error) {
+func GetCodebase(c client.Client, name, namespace string) (*codebaseApi.Codebase, error) {
 	i := &codebaseApi.Codebase{}
-	if err := client.Get(context.TODO(), types.NamespacedName{
+	if err := c.Get(context.TODO(), types.NamespacedName{
 		Namespace: namespace,
 		Name:      name,
 	}, i); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get codebase: %w", err)
 	}
+
 	return i, nil
 }
 
@@ -87,6 +91,7 @@ func GetWatchNamespace() (string, error) {
 	if !found {
 		return "", fmt.Errorf("%s must be set", watchNamespaceEnvVar)
 	}
+
 	return ns, nil
 }
 
@@ -99,13 +104,15 @@ func GetDebugMode() (bool, error) {
 
 	b, err := strconv.ParseBool(mode)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to parse bool: %w", err)
 	}
+
 	return b, nil
 }
 
-// Check whether the operator is running in cluster or locally
+// RunningInCluster check whether the operator is running in cluster or locally
 func RunningInCluster() bool {
 	_, err := os.Stat(inClusterNamespacePath)
+
 	return !os.IsNotExist(err)
 }
