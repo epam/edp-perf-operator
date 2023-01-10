@@ -31,8 +31,8 @@ In order to install the PERF Operator, follow the steps below:
      ```bash
      helm search repo epamedp/perf-operator -l
      NAME                           CHART VERSION   APP VERSION     DESCRIPTION
+     epamedp/perf-operator          2.12.0          2.12.0          A Helm chart for EDP Perf Operator
      epamedp/perf-operator          2.11.0          2.11.0          A Helm chart for EDP Perf Operator
-     epamedp/perf-operator          2.10.0          2.10.0          A Helm chart for EDP Perf Operator
      ```
 
     _**NOTE:** It is highly recommended to use the latest released version._
