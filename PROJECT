@@ -1,0 +1,46 @@
+domain: edp.epam.com
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: empty-operator
+repo: github.com/epam/edp-perf-operator/v2
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: edp.epam.com
+  group: edp
+  kind: PerfDataSourceGitLab
+  path: github.com/epam/edp-perf-operator/v2/api/edp/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: edp.epam.com
+  group: edp
+  kind: PerfDataSourceJenkins
+  path: github.com/epam/edp-perf-operator/v2/api/edp/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: edp.epam.com
+  group: edp
+  kind: PerfDataSourceSonar
+  path: github.com/epam/edp-perf-operator/v2/api/edp/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: edp.epam.com
+  group: edp
+  kind: PerfServer
+  path: github.com/epam/edp-perf-operator/v2/api/edp/v1
+  version: v1
+version: "3"

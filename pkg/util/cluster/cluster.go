@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
-	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
 )
 
 const (
@@ -85,7 +85,7 @@ func GetCodebase(c client.Client, name, namespace string) (*codebaseApi.Codebase
 	return i, nil
 }
 
-// GetWatchNamespace returns the namespace the operator should be watching for changes
+// GetWatchNamespace returns the namespace the operator should be watching for changes.
 func GetWatchNamespace() (string, error) {
 	ns, found := os.LookupEnv(watchNamespaceEnvVar)
 	if !found {
@@ -95,7 +95,7 @@ func GetWatchNamespace() (string, error) {
 	return ns, nil
 }
 
-// GetDebugMode returns the debug mode value
+// GetDebugMode returns the debug mode value.
 func GetDebugMode() (bool, error) {
 	mode, found := os.LookupEnv(debugModeEnvVar)
 	if !found {
@@ -110,7 +110,7 @@ func GetDebugMode() (bool, error) {
 	return b, nil
 }
 
-// RunningInCluster check whether the operator is running in cluster or locally
+// RunningInCluster check whether the operator is running in cluster or locally.
 func RunningInCluster() bool {
 	_, err := os.Stat(inClusterNamespacePath)
 

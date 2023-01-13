@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 	"gopkg.in/resty.v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 )
 
 type LuminateClient interface {

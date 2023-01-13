@@ -3,7 +3,7 @@ package command
 import (
 	"strings"
 
-	perfApi "github.com/epam/edp-perf-operator/v2/pkg/apis/edp/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/common"
 )

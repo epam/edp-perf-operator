@@ -1,9 +1,10 @@
 package mock
 
 import (
+	"github.com/stretchr/testify/mock"
+
 	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"
-	"github.com/stretchr/testify/mock"
 )
 
 type MockPerfClient struct {

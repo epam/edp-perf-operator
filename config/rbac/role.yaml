@@ -1,0 +1,112 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: manager-role
+  namespace: placeholder
+rules:
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfdatasourcegitlabs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfdatasourcegitlabs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfdatasourcegitlabs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfdatasourcejenkinses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfdatasourcejenkinses/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfdatasourcejenkinses/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfdatasourcesonars
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfdatasourcesonars/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfdatasourcesonars/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfservers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfservers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - v2.edp.epam.com
+  resources:
+  - perfservers/status
+  verbs:
+  - get
+  - patch
+  - update

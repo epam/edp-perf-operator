@@ -1,0 +1,12 @@
+apiVersion: v1.edp.epam.com/v1
+kind: PerfServer
+metadata:
+  labels:
+    app.kubernetes.io/name: perfserver
+    app.kubernetes.io/instance: perfserver-sample
+    app.kubernetes.io/part-of: empty-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: empty-operator
+  name: perfserver-sample
+spec:
+  # TODO(user): Add fields here

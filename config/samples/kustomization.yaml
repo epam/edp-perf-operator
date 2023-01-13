@@ -1,0 +1,7 @@
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- v1_v1_perfdatasourcegitlab.yaml
+- v1_v1_perfdatasourcejenkins.yaml
+- v1_v1_perfdatasourcesonar.yaml
+- v1_v1_perfserver.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples
