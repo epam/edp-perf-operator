@@ -16,7 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/v1"
 	"github.com/epam/edp-perf-operator/v2/controllers/perfdatasourcejenkins/chain"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"

@@ -12,8 +12,8 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	codebaseApi "github.com/epam/edp-codebase-operator/v2/pkg/apis/edp/v1"
-	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
+	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/command"
 	"github.com/epam/edp-perf-operator/v2/pkg/model/dto"

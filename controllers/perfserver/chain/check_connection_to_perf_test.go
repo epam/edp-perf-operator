@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
 )
 

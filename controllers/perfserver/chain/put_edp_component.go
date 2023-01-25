@@ -15,8 +15,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	componentApi "github.com/epam/edp-component-operator/api/v1/v1"
-	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
+	componentApi "github.com/epam/edp-component-operator/api/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/v1"
 )
 
 type PutEdpComponent struct {

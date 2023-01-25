@@ -9,8 +9,8 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	componentApi "github.com/epam/edp-component-operator/api/v1/v1"
-	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
+	componentApi "github.com/epam/edp-component-operator/api/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/v1"
 )
 
 const (

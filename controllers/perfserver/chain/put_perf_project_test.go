@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
 )
 

@@ -7,7 +7,7 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/v1"
 	"github.com/epam/edp-perf-operator/v2/controllers/perfserver/chain/handler"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf"
 )

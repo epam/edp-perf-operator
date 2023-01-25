@@ -8,7 +8,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	perfApi "github.com/epam/edp-perf-operator/v2/api/edp/v1"
+	perfApi "github.com/epam/edp-perf-operator/v2/api/v1"
 	"github.com/epam/edp-perf-operator/v2/controllers/perfdatasourcesonar/chain/handler"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/cluster"
 	"github.com/epam/edp-perf-operator/v2/pkg/util/consts"
