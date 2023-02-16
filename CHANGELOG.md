@@ -1,6 +1,25 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+
+- Added a stub linter [EPMDEDP-10536](https://jiraeu.epam.com/browse/EPMDEDP-10536)
+- Updated Operator SDK version [EPMDEDP-11168](https://jiraeu.epam.com/browse/EPMDEDP-11168)
+- Updated EDP components [EPMDEDP-11206](https://jiraeu.epam.com/browse/EPMDEDP-11206)
+
+### Code Refactoring
+
+- Apply golangci-lint [EPMDEDP-10629](https://jiraeu.epam.com/browse/EPMDEDP-10629)
+- Removed old api [EPMDEDP-11206](https://jiraeu.epam.com/browse/EPMDEDP-11206)
+
+### Routine
+
+- Update current development version [EPMDEDP-10274](https://jiraeu.epam.com/browse/EPMDEDP-10274)
+
+### Documentation
+
+- Update chart and application version in Readme file [EPMDEDP-11221](https://jiraeu.epam.com/browse/EPMDEDP-11221)
+
 
 <a name="v2.12.0"></a>
 ## [v2.12.0] - 2022-08-26
