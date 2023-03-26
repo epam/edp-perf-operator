@@ -1,6 +1,9 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v2.13.0"></a>
+## [v2.13.0] - 2023-03-25
 ### Features
 
 - Added a stub linter [EPMDEDP-10536](https://jiraeu.epam.com/browse/EPMDEDP-10536)
@@ -15,6 +18,9 @@
 ### Routine
 
 - Update current development version [EPMDEDP-10274](https://jiraeu.epam.com/browse/EPMDEDP-10274)
+- Update git-chglog for perf-operator [EPMDEDP-11518](https://jiraeu.epam.com/browse/EPMDEDP-11518)
+- Bump golang.org/x/net from 0.5.0 to 0.8.0 [EPMDEDP-11578](https://jiraeu.epam.com/browse/EPMDEDP-11578)
+- Upgrade alpine image version to 3.16.4 [EPMDEDP-11764](https://jiraeu.epam.com/browse/EPMDEDP-11764)
 
 ### Documentation
 
@@ -122,7 +128,8 @@
 <a name="v2.7.0"></a>
 ## v2.7.0 - 2021-12-03
 
-[Unreleased]: https://github.com/epam/edp-perf-operator/compare/v2.12.0...HEAD
+[Unreleased]: https://github.com/epam/edp-perf-operator/compare/v2.13.0...HEAD
+[v2.13.0]: https://github.com/epam/edp-perf-operator/compare/v2.12.0...v2.13.0
 [v2.12.0]: https://github.com/epam/edp-perf-operator/compare/v2.11.0...v2.12.0
 [v2.11.0]: https://github.com/epam/edp-perf-operator/compare/v2.10.0...v2.11.0
 [v2.10.0]: https://github.com/epam/edp-perf-operator/compare/v2.9.0...v2.10.0
