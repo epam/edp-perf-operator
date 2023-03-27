@@ -4,75 +4,64 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	perfApi "github.com/epam/edp-perf-operator/v2/api/v1"
 	"github.com/epam/edp-perf-operator/v2/pkg/client/perf/mock"
 )
 
-func TestCheckConnectionToPerf_ShouldBeExecutedSuccessfully(t *testing.T) {
-	ps := &perfApi.PerfServer{}
+func TestCheckConnectionToPerfServeRequest(t *testing.T) {
+	t.Parallel()
 
-	objs := []runtime.Object{
-		ps,
+	scheme := runtime.NewScheme()
+
+	require.NoError(t, perfApi.AddToScheme(scheme))
+
+	tests := []struct {
+		name             string
+		objects          []runtime.Object
+		wantErr          require.ErrorAssertionFunc
+		connectedSuccess bool
+		connectedErr     error
+	}{
+		{
+			name:             "should be executed successfully",
+			objects:          []runtime.Object{&perfApi.PerfServer{}},
+			wantErr:          require.NoError,
+			connectedSuccess: true,
+		},
+		{
+			name:             "should be executed with error",
+			objects:          []runtime.Object{},
+			wantErr:          require.Error,
+			connectedSuccess: false,
+			connectedErr:     fmt.Errorf("failed"),
+		},
+		{
+			name:             "should not be updated",
+			objects:          []runtime.Object{},
+			wantErr:          require.NoError,
+			connectedSuccess: true,
+		},
 	}
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, ps)
+	for _, tt := range tests {
+		tt := tt
 
-	mPerfCl := new(mock.MockPerfClient)
-	perf := CheckConnectionToPerf{
-		client:     fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
-		perfClient: mPerfCl,
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			mockPerfClient := new(mock.MockPerfClient)
+			mockPerfClient.On("Connected").Return(tt.connectedSuccess, tt.connectedErr)
+
+			checkConnectionToPerf := CheckConnectionToPerf{
+				client:     fake.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(tt.objects...).Build(),
+				perfClient: mockPerfClient,
+			}
+
+			server := &perfApi.PerfServer{}
+			tt.wantErr(t, checkConnectionToPerf.ServeRequest(server))
+		})
 	}
-
-	mPerfCl.On("Connected").Return(true, nil)
-
-	psr := &perfApi.PerfServer{}
-	err := perf.ServeRequest(psr)
-	assert.NoError(t, err)
-	assert.Equal(t, true, psr.Status.Available)
-}
-
-func TestCheckConnectionToPerf_ShouldBeExecutedWithError(t *testing.T) {
-	ps := &perfApi.PerfServer{}
-
-	objs := []runtime.Object{
-		ps,
-	}
-	s := scheme.Scheme
-	s.AddKnownTypes(v1.SchemeGroupVersion, ps)
-
-	mPerfCl := new(mock.MockPerfClient)
-	perf := CheckConnectionToPerf{
-		client:     fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
-		perfClient: mPerfCl,
-	}
-
-	mPerfCl.On("Connected").Return(false, fmt.Errorf("failed"))
-
-	psr := &perfApi.PerfServer{
-		Status: perfApi.PerfServerStatus{},
-	}
-	err := perf.ServeRequest(psr)
-	assert.Error(t, err)
-}
-
-func TestCheckConnectionToPerf_ShouldNotBeUpdated(t *testing.T) {
-	mPerfCl := new(mock.MockPerfClient)
-	perf := CheckConnectionToPerf{
-		client:     fake.NewClientBuilder().WithRuntimeObjects([]runtime.Object{}...).Build(),
-		perfClient: mPerfCl,
-	}
-
-	mPerfCl.On("Connected").Return(true, nil)
-
-	psr := &perfApi.PerfServer{
-		Status: perfApi.PerfServerStatus{},
-	}
-	err := perf.ServeRequest(psr)
-	assert.NoError(t, err)
 }

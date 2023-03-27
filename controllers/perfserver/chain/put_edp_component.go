@@ -1,15 +1,13 @@
 package chain
 
 import (
-	"bufio"
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io"
 	"os"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -48,10 +46,10 @@ func (h PutEdpComponent) putEdpComponent(server *perfApi.PerfServer) error {
 		Namespace: server.Namespace,
 	}, &componentApi.EDPComponent{}); err != nil {
 		if errors.IsNotFound(err) {
-			return h.createEdpComponent(server)
+			return h.createEdpComponent(server, perfIconPath, os.ReadFile)
 		}
 
-		return fmt.Errorf("failed toget client: %w", err)
+		return fmt.Errorf("failed to get client: %w", err)
 	}
 
 	log.Info("EDP component already exists. skip creating...", keyName, server.Name)
@@ -59,14 +57,14 @@ func (h PutEdpComponent) putEdpComponent(server *perfApi.PerfServer) error {
 	return nil
 }
 
-func (h PutEdpComponent) createEdpComponent(server *perfApi.PerfServer) error {
-	icon, err := getIcon()
+func (h PutEdpComponent) createEdpComponent(server *perfApi.PerfServer, iconPath string, fileOpener func(string) ([]byte, error)) error {
+	icon, err := getIcon(iconPath, fileOpener)
 	if err != nil {
 		return err
 	}
 
 	comp := &componentApi.EDPComponent{
-		ObjectMeta: metaV1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      server.Name,
 			Namespace: server.Namespace,
 		},
@@ -91,23 +89,10 @@ func (h PutEdpComponent) createEdpComponent(server *perfApi.PerfServer) error {
 	return nil
 }
 
-func getIcon() (*string, error) {
-	f, err := os.Open(perfIconPath)
+func getIcon(path string, fileReaderFunc func(string) ([]byte, error)) (*string, error) {
+	content, err := fileReaderFunc(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
-	}
-
-	defer func(f *os.File) {
-		if defErr := f.Close(); defErr != nil {
-			log.Error(defErr, "failed to close file")
-		}
-	}(f)
-
-	reader := bufio.NewReader(f)
-
-	content, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read content: %w", err)
 	}
 
 	encoded := base64.StdEncoding.EncodeToString(content)

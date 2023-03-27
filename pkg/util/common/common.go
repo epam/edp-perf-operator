@@ -13,6 +13,11 @@ func SortArray(array []string) {
 }
 
 func ConvertToStringArray(conf interface{}) []string {
+	sInterface, ok := conf.([]string)
+	if ok {
+		return sInterface
+	}
+
 	aInterface, ok := conf.([]interface{})
 	if !ok {
 		return []string{}

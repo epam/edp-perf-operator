@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	coreV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	codebaseApi "github.com/epam/edp-codebase-operator/v2/api/v1"
@@ -23,447 +21,224 @@ const (
 	gitlabDsType = "GITLAB"
 )
 
-// nolint
-func init() {
-	utilruntime.Must(perfApi.AddToScheme(scheme.Scheme))
-	utilruntime.Must(codebaseApi.AddToScheme(scheme.Scheme))
-}
+func TestPutDataSource_ServeRequest(t *testing.T) {
+	t.Parallel()
 
-func TestPutDataSource_ShouldUpdateGitLabDataSourceWithoutActivating(t *testing.T) {
-	pds := &perfApi.PerfDataSourceGitLab{
-		ObjectMeta: v1.ObjectMeta{
-			Namespace: fakeNamespace,
-			OwnerReferences: []v1.OwnerReference{
-				{
-					Kind: "PerfServer",
-					Name: fakeName,
+	scheme := runtime.NewScheme()
+
+	require.NoError(t, corev1.AddToScheme(scheme))
+	require.NoError(t, perfApi.AddToScheme(scheme))
+	require.NoError(t, codebaseApi.AddToScheme(scheme))
+
+	type parameters struct {
+		dataSourceCommandRepositories []string
+		dataSourceCommandBranches     []string
+
+		dataSourceActive       bool
+		dataSourceRepositories []string
+		dataSourceBranches     []string
+
+		activateDataSourceErr   error
+		getProjectDataSourceErr error
+	}
+
+	tests := []struct {
+		name           string
+		getProjectFail bool
+		status         string
+		parameters     parameters
+		wantErr        require.ErrorAssertionFunc
+	}{
+		{
+			name:    "should update GitLabDataSource without activating",
+			wantErr: require.NoError,
+			status:  "created",
+			parameters: parameters{
+				dataSourceActive:       true,
+				dataSourceRepositories: []string{"repo2"},
+				dataSourceBranches:     []string{"develop"},
+
+				dataSourceCommandRepositories: []string{"repo2", "repo1"},
+				dataSourceCommandBranches:     []string{"develop", "master"},
+			},
+		},
+		{
+			name:    "should update GitLabDataSource with activating",
+			wantErr: require.NoError,
+			status:  "created",
+			parameters: parameters{
+				dataSourceRepositories: []string{"repo2"},
+				dataSourceBranches:     []string{"develop"},
+
+				dataSourceCommandRepositories: []string{"repo2", "repo1"},
+				dataSourceCommandBranches:     []string{"develop", "master"},
+			},
+		},
+		{
+			name:    "should create GitLabDataSource",
+			wantErr: require.NoError,
+			status:  "created",
+			parameters: parameters{
+				dataSourceCommandRepositories: []string{"repo1"},
+				dataSourceCommandBranches:     []string{"master"},
+			},
+		},
+		{
+			name:    "should not find DataSource in PERF",
+			wantErr: require.Error,
+			status:  "error",
+			parameters: parameters{
+				getProjectDataSourceErr: fmt.Errorf("failed"),
+			},
+		},
+		{
+			name: "should not activate DataSource",
+			parameters: parameters{
+				dataSourceRepositories: []string{"repo2"},
+				dataSourceBranches:     []string{"develop"},
+
+				dataSourceCommandRepositories: []string{"repo1"},
+				dataSourceCommandBranches:     []string{"master"},
+				activateDataSourceErr:         fmt.Errorf("failed"),
+			},
+			wantErr: require.Error,
+			status:  "error",
+		},
+		{
+			name:    "should not update DataSource because of missing new parameters",
+			wantErr: require.NoError,
+			parameters: parameters{
+				dataSourceActive:       true,
+				dataSourceRepositories: []string{"repo2"},
+				dataSourceBranches:     []string{"develop"},
+
+				dataSourceCommandRepositories: []string{"repo2", "repo1"},
+				dataSourceCommandBranches:     []string{"develop", "master"},
+			},
+		},
+		{
+			name:           "should fail while getting project DataSource",
+			getProjectFail: true,
+			wantErr:        require.Error,
+			status:         "error",
+			parameters: parameters{
+				getProjectDataSourceErr: fmt.Errorf("failed"),
+
+				dataSourceCommandRepositories: []string{"repo2", "repo1"},
+				dataSourceCommandBranches:     []string{"develop", "master"},
+			},
+		},
+		{
+			name:    "should run without errors, because there is nothing to update",
+			wantErr: require.NoError,
+			parameters: parameters{
+				dataSourceActive:       true,
+				dataSourceRepositories: []string{"repo1"},
+				dataSourceBranches:     []string{"master"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			perfDataSourceGitLab := &perfApi.PerfDataSourceGitLab{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: fakeNamespace,
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							Kind: "PerfServer",
+							Name: fakeName,
+						},
+					},
 				},
-			},
-		},
-		Spec: perfApi.PerfDataSourceGitLabSpec{
-			PerfServerName: fakeName,
-			Type:           gitlabDsType,
-			Config: perfApi.DataSourceGitLabConfig{
-				Repositories: []string{"repo1"},
-				Branches:     []string{"master"},
-				Url:          fakeName,
-			},
-		},
-	}
-
-	ps := &perfApi.PerfServer{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      fakeName,
-			Namespace: fakeNamespace,
-		},
-		Spec: perfApi.PerfServerSpec{
-			ProjectName: fakeName,
-		},
-	}
-
-	sec := &coreV1.Secret{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      gitLabSecretName,
-			Namespace: fakeNamespace,
-		},
-		Data: map[string][]byte{
-			"username": []byte("fake"),
-			"password": []byte("fake"),
-		},
-	}
-
-	mPerfCl := new(mock.MockPerfClient)
-	ch := PutDataSource{
-		client:     fake.NewClientBuilder().WithRuntimeObjects(pds, ps, sec).Build(),
-		perfClient: mPerfCl,
-	}
-
-	mPerfCl.On("GetProjectDataSource", fakeName, gitlabDsType).
-		Return(&dto.DataSource{
-			Active: true,
-			Type:   gitlabDsType,
-			Config: map[string]interface{}{
-				"repositories": []interface{}{"repo2"},
-				"branches":     []interface{}{"develop"},
-			},
-		}, nil)
-
-	mPerfCl.On("UpdateDataSource", command.DataSourceCommand{
-		Type: gitlabDsType,
-		Config: command.DataSourceGitlabConfig{
-			Repositories:   []string{"repo2", "repo1"},
-			Url:            fakeName,
-			InstanceId:     fakeName,
-			WithMembership: false,
-			AllPublic:      false,
-			AllBranches:    false,
-			Branches:       []string{"develop", "master"},
-			Username:       "fake",
-			Password:       "fake",
-		},
-	}).Return(nil)
-
-	assert.NoError(t, ch.ServeRequest(pds))
-	assert.Equal(t, "created", pds.Status.Status)
-}
-
-func TestPutDataSource_ShouldUpdateGitLabDataSourceWithActivating(t *testing.T) {
-	pds := &perfApi.PerfDataSourceGitLab{
-		ObjectMeta: v1.ObjectMeta{
-			Namespace: fakeNamespace,
-			OwnerReferences: []v1.OwnerReference{
-				{
-					Kind: "PerfServer",
-					Name: fakeName,
+				Spec: perfApi.PerfDataSourceGitLabSpec{
+					PerfServerName: fakeName,
+					Type:           gitlabDsType,
+					Config: perfApi.DataSourceGitLabConfig{
+						Repositories: []string{"repo1"},
+						Branches:     []string{"master"},
+						Url:          fakeName,
+					},
 				},
-			},
-		},
-		Spec: perfApi.PerfDataSourceGitLabSpec{
-			PerfServerName: fakeName,
-			Type:           gitlabDsType,
-			Config: perfApi.DataSourceGitLabConfig{
-				Repositories: []string{"repo1"},
-				Branches:     []string{"master"},
-				Url:          fakeName,
-			},
-		},
-	}
+			}
 
-	ps := &perfApi.PerfServer{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      fakeName,
-			Namespace: fakeNamespace,
-		},
-		Spec: perfApi.PerfServerSpec{
-			ProjectName: fakeName,
-		},
-	}
-
-	sec := &coreV1.Secret{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      gitLabSecretName,
-			Namespace: fakeNamespace,
-		},
-		Data: map[string][]byte{
-			"username": []byte("fake"),
-			"password": []byte("fake"),
-		},
-	}
-
-	cl := fake.NewClientBuilder().
-		WithScheme(scheme.Scheme).
-		WithObjects(pds, ps, sec).
-		Build()
-
-	mPerfCl := new(mock.MockPerfClient)
-	ch := PutDataSource{
-		client:     cl,
-		perfClient: mPerfCl,
-	}
-
-	mPerfCl.On("GetProjectDataSource", fakeName, gitlabDsType).
-		Return(&dto.DataSource{
-			Active: false,
-			Type:   gitlabDsType,
-			Config: map[string]interface{}{
-				"repositories": []interface{}{"repo2"},
-				"branches":     []interface{}{"develop"},
-			},
-		}, nil)
-
-	mPerfCl.On("UpdateDataSource", command.DataSourceCommand{
-		Type: gitlabDsType,
-		Config: command.DataSourceGitlabConfig{
-			Repositories:   []string{"repo2", "repo1"},
-			Url:            fakeName,
-			InstanceId:     fakeName,
-			WithMembership: false,
-			AllPublic:      false,
-			AllBranches:    false,
-			Branches:       []string{"develop", "master"},
-			Username:       "fake",
-			Password:       "fake",
-		},
-	}).Return(nil)
-
-	mPerfCl.On("ActivateDataSource", fakeName, 0).Return(nil)
-
-	assert.NoError(t, ch.ServeRequest(pds))
-	assert.Equal(t, "created", pds.Status.Status)
-}
-
-func TestPutDataSource_ShouldCreateGitLabDataSource(t *testing.T) {
-	pds := &perfApi.PerfDataSourceGitLab{
-		ObjectMeta: v1.ObjectMeta{
-			Namespace: fakeNamespace,
-			OwnerReferences: []v1.OwnerReference{
-				{
-					Kind: "PerfServer",
-					Name: fakeName,
+			perfServer := &perfApi.PerfServer{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      fakeName,
+					Namespace: fakeNamespace,
 				},
-			},
-		},
-		Spec: perfApi.PerfDataSourceGitLabSpec{
-			PerfServerName: fakeName,
-			Type:           gitlabDsType,
-			Config: perfApi.DataSourceGitLabConfig{
-				Repositories: []string{"repo1"},
-				Branches:     []string{"master"},
-				Url:          fakeName,
-			},
-		},
-	}
-
-	ps := &perfApi.PerfServer{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      fakeName,
-			Namespace: fakeNamespace,
-		},
-		Spec: perfApi.PerfServerSpec{
-			ProjectName: fakeName,
-		},
-	}
-
-	sec := &coreV1.Secret{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      gitLabSecretName,
-			Namespace: fakeNamespace,
-		},
-		Data: map[string][]byte{
-			"username": []byte("fake"),
-			"password": []byte("fake"),
-		},
-	}
-
-	cl := fake.NewClientBuilder().
-		WithScheme(scheme.Scheme).
-		WithObjects(pds, ps, sec).
-		Build()
-
-	mPerfCl := new(mock.MockPerfClient)
-	ch := PutDataSource{
-		client:     cl,
-		perfClient: mPerfCl,
-	}
-
-	mPerfCl.On("GetProjectDataSource", fakeName, gitlabDsType).Return(nil, nil)
-
-	mPerfCl.On("CreateDataSource", fakeName, command.DataSourceCommand{
-		Type: gitlabDsType,
-		Config: command.DataSourceGitlabConfig{
-			Repositories: []string{"repo1"},
-			Branches:     []string{"master"},
-			Url:          fakeName,
-			InstanceId:   fakeName,
-			Username:     "fake",
-			Password:     "fake",
-		},
-	}).Return(nil)
-
-	assert.NoError(t, ch.ServeRequest(pds))
-	assert.Equal(t, "created", pds.Status.Status)
-}
-
-func TestPutDataSource_ShouldNotFindDataSourceInPERF(t *testing.T) {
-	ps := &perfApi.PerfServer{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      fakeName,
-			Namespace: fakeNamespace,
-		},
-		Spec: perfApi.PerfServerSpec{
-			ProjectName: fakeName,
-		},
-	}
-
-	objs := []runtime.Object{
-		ps,
-	}
-
-	mPerfCl := new(mock.MockPerfClient)
-	ch := PutDataSource{
-		client:     fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
-		perfClient: mPerfCl,
-	}
-
-	mPerfCl.On("GetProjectDataSource", fakeName, "").Return(nil, fmt.Errorf("failed"))
-
-	pds := &perfApi.PerfDataSourceGitLab{
-		ObjectMeta: v1.ObjectMeta{
-			Namespace: fakeNamespace,
-			OwnerReferences: []v1.OwnerReference{
-				{
-					Kind: "PerfServer",
-					Name: fakeName,
+				Spec: perfApi.PerfServerSpec{
+					ProjectName: fakeName,
 				},
-			},
-		},
-	}
+			}
 
-	assert.Error(t, ch.ServeRequest(pds))
-	assert.Equal(t, "error", pds.Status.Status)
-}
-
-func TestPutDataSource_ShouldNotActivateDataSource(t *testing.T) {
-	pds := &perfApi.PerfDataSourceGitLab{
-		ObjectMeta: v1.ObjectMeta{
-			Namespace: fakeNamespace,
-			OwnerReferences: []v1.OwnerReference{
-				{
-					Kind: "PerfServer",
-					Name: fakeName,
+			gitLabUserSecret := &corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      gitLabSecretName,
+					Namespace: fakeNamespace,
 				},
-			},
-		},
-		Spec: perfApi.PerfDataSourceGitLabSpec{
-			Type: gitlabDsType,
-			Config: perfApi.DataSourceGitLabConfig{
-				Repositories: []string{"repo1"},
-				Branches:     []string{"master"},
-				Url:          fakeName,
-			},
-		},
-	}
-
-	ps := &perfApi.PerfServer{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      fakeName,
-			Namespace: fakeNamespace,
-		},
-		Spec: perfApi.PerfServerSpec{
-			ProjectName: fakeName,
-		},
-	}
-
-	sec := &coreV1.Secret{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      gitLabSecretName,
-			Namespace: fakeNamespace,
-		},
-		Data: map[string][]byte{
-			"username": []byte("fake"),
-			"password": []byte("fake"),
-		},
-	}
-
-	objs := []runtime.Object{
-		pds, ps, sec,
-	}
-
-	mPerfCl := new(mock.MockPerfClient)
-	ch := PutDataSource{
-		client:     fake.NewClientBuilder().WithRuntimeObjects(objs...).Build(),
-		perfClient: mPerfCl,
-	}
-
-	mPerfCl.On("GetProjectDataSource", fakeName, gitlabDsType).
-		Return(&dto.DataSource{
-			Active: false,
-			Type:   gitlabDsType,
-			Config: map[string]interface{}{
-				"repositories": []interface{}{"repo2"},
-				"branches":     []interface{}{"develop"},
-			},
-		}, nil)
-
-	mPerfCl.On("UpdateDataSource", command.DataSourceCommand{
-		Type: gitlabDsType,
-		Config: command.DataSourceGitlabConfig{
-			Repositories:   []string{"repo2", "repo1"},
-			Url:            fakeName,
-			InstanceId:     fakeName,
-			WithMembership: false,
-			AllPublic:      false,
-			AllBranches:    false,
-			Branches:       []string{"develop", "master"},
-			Username:       "fake",
-			Password:       "fake",
-		},
-	}).Return(nil)
-
-	mPerfCl.On("ActivateDataSource", fakeName, 0).Return(fmt.Errorf("failed"))
-
-	assert.Error(t, ch.ServeRequest(pds))
-	assert.Equal(t, "error", pds.Status.Status)
-}
-
-func TestPutDataSource_ShouldNotUpdateDataSourceBecauseOfMissingNewParameters(t *testing.T) {
-	pds := &perfApi.PerfDataSourceGitLab{
-		ObjectMeta: v1.ObjectMeta{
-			Namespace: fakeNamespace,
-			OwnerReferences: []v1.OwnerReference{
-				{
-					Kind: "PerfServer",
-					Name: fakeName,
+				Data: map[string][]byte{
+					"username": []byte("fake"),
+					"password": []byte("fake"),
 				},
-			},
-		},
-		Spec: perfApi.PerfDataSourceGitLabSpec{
-			PerfServerName: fakeName,
-			Type:           gitlabDsType,
-			Config: perfApi.DataSourceGitLabConfig{
-				Repositories: []string{"repo1"},
-				Branches:     []string{"master"},
-				Url:          fakeName,
-			},
-		},
+			}
+
+			objects := []runtime.Object{perfDataSourceGitLab, perfServer, gitLabUserSecret}
+
+			perfClient := new(mock.MockPerfClient)
+
+			var dataSource *dto.DataSource = nil
+
+			if tt.parameters.dataSourceRepositories != nil {
+				dataSource = &dto.DataSource{
+					Active: tt.parameters.dataSourceActive,
+					Type:   gitlabDsType,
+					Config: map[string]any{
+						"repositories": tt.parameters.dataSourceRepositories,
+						"branches":     tt.parameters.dataSourceBranches,
+					},
+				}
+			}
+			dataSourceCommand := command.DataSourceCommand{
+				Type: gitlabDsType,
+				Config: command.DataSourceGitlabConfig{
+					Url:          fakeName,
+					InstanceId:   fakeName,
+					Username:     "fake",
+					Password:     "fake",
+					Repositories: tt.parameters.dataSourceCommandRepositories,
+					Branches:     tt.parameters.dataSourceCommandBranches,
+				},
+			}
+
+			perfClient.On("CreateDataSource", fakeName, dataSourceCommand).Return(nil)
+
+			perfClient.On("GetProjectDataSource", fakeName, gitlabDsType).
+				Return(dataSource, tt.parameters.getProjectDataSourceErr)
+			perfClient.On("GetProjectDataSource", fakeName, "").
+				Return(dataSource, tt.parameters.getProjectDataSourceErr)
+
+			perfClient.On("UpdateDataSource", dataSourceCommand).Return(nil)
+
+			perfClient.On("ActivateDataSource", fakeName, 0).Return(tt.parameters.activateDataSourceErr)
+
+			putDataSource := PutDataSource{
+				client: fake.NewClientBuilder().
+					WithScheme(scheme).
+					WithRuntimeObjects(objects...).
+					Build(),
+				perfClient: perfClient,
+			}
+
+			tt.wantErr(t, putDataSource.ServeRequest(perfDataSourceGitLab))
+
+			if tt.status != "" {
+				require.Equal(t, tt.status, perfDataSourceGitLab.Status.Status)
+			}
+		})
 	}
-
-	ps := &perfApi.PerfServer{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      fakeName,
-			Namespace: fakeNamespace,
-		},
-		Spec: perfApi.PerfServerSpec{
-			ProjectName: fakeName,
-		},
-	}
-
-	sec := &coreV1.Secret{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      gitLabSecretName,
-			Namespace: fakeNamespace,
-		},
-		Data: map[string][]byte{
-			"username": []byte("fake"),
-			"password": []byte("fake"),
-		},
-	}
-
-	cl := fake.NewClientBuilder().
-		WithScheme(scheme.Scheme).
-		WithObjects(pds, ps, sec).
-		Build()
-
-	mPerfCl := new(mock.MockPerfClient)
-	ch := PutDataSource{
-		client:     cl,
-		perfClient: mPerfCl,
-	}
-
-	mPerfCl.On("GetProjectDataSource", fakeName, gitlabDsType).
-		Return(&dto.DataSource{
-			Active: true,
-			Type:   gitlabDsType,
-			Config: map[string]interface{}{
-				"repositories": []interface{}{"repo2"},
-				"branches":     []interface{}{"develop"},
-			},
-		}, nil)
-
-	mPerfCl.On("UpdateDataSource", command.DataSourceCommand{
-		Type: gitlabDsType,
-		Config: command.DataSourceGitlabConfig{
-			Repositories:   []string{"repo2", "repo1"},
-			Url:            fakeName,
-			InstanceId:     fakeName,
-			WithMembership: false,
-			AllPublic:      false,
-			AllBranches:    false,
-			Branches:       []string{"develop", "master"},
-			Username:       "fake",
-			Password:       "fake",
-		},
-	}).Return(nil)
-
-	assert.NoError(t, ch.ServeRequest(pds))
 }
