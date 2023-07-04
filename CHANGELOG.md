@@ -9,6 +9,7 @@
 ### Routine
 
 - Update current development version [EPMDEDP-11472](https://jiraeu.epam.com/browse/EPMDEDP-11472)
+- Update current development version [EPMDEDP-11826](https://jiraeu.epam.com/browse/EPMDEDP-11826)
 - Add templates for github issues [EPMDEDP-11928](https://jiraeu.epam.com/browse/EPMDEDP-11928)
 - Upgrade alpine image version to 3.18.0 [EPMDEDP-12085](https://jiraeu.epam.com/browse/EPMDEDP-12085)
 
